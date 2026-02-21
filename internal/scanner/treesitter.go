@@ -139,7 +139,7 @@ func (t *TreeSitterScanner) parseFile(root, path string, query *tree_sitter.Quer
 	}
 
 	rel, _ := filepath.Rel(root, path)
-	return &FileImports{File: rel, Imports: imports, Details: details, Exports: exports, Lines: bytes.Count(src, []byte{'\n'}) + 1}, nil
+	return &FileImports{File: rel, Lang: "js", Imports: imports, Details: details, Exports: exports, Lines: bytes.Count(src, []byte{'\n'}) + 1}, nil
 }
 
 // extractDetail walks up from the captured string node to the statement

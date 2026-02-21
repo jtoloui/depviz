@@ -33,6 +33,7 @@ func TestHTML_ContainsStructure(t *testing.T) {
 	results := []scanner.FileImports{
 		{
 			File:    "src/app.ts",
+			Lang:    "js",
 			Imports: []string{"react", "./utils"},
 			Details: []scanner.ImportDetail{
 				{Path: "react", Kind: scanner.ImportDefault, Line: 1, Snippet: "import React from 'react';"},
@@ -56,14 +57,14 @@ func TestHTML_ContainsStructure(t *testing.T) {
 		name    string
 		pattern string
 	}{
-		{"doctype", "<!DOCTYPE html>"},
+		{"doctype", "<!doctype html>"},
 		{"css inlined", "<style>"},
 		{"js inlined", "const data ="},
 		{"root path", `const root = "/project"`},
 		{"devicon cdn", "devicon.min.css"},
 		{"sidebar", `class="sidebar"`},
 		{"grid", `class="grid"`},
-		{"theme toggle", "theme-toggle"},
+		{"theme select", "theme-select"},
 	}
 	for _, c := range checks {
 		t.Run(c.name, func(t *testing.T) {
@@ -80,6 +81,7 @@ func TestHTML_JSONDataIntegrity(t *testing.T) {
 	results := []scanner.FileImports{
 		{
 			File:    "main.go",
+			Lang:    "go",
 			Imports: []string{"fmt", "github.com/example/pkg"},
 			Details: []scanner.ImportDetail{
 				{Path: "fmt", Kind: scanner.ImportNamed, Line: 3},
@@ -169,6 +171,7 @@ func TestHTML_DuplicateImportPaths(t *testing.T) {
 	results := []scanner.FileImports{
 		{
 			File:    "app.tsx",
+			Lang:    "js",
 			Imports: []string{"react", "react"},
 			Details: []scanner.ImportDetail{
 				{Path: "react", Kind: scanner.ImportDefault, Line: 1, Snippet: "import React from 'react';"},
@@ -216,7 +219,7 @@ func TestHTML_EmptyResults(t *testing.T) {
 	}
 
 	html := buf.String()
-	if !strings.Contains(html, "<!DOCTYPE html>") {
+	if !strings.Contains(html, "<!doctype html>") {
 		t.Error("empty results should still produce valid HTML")
 	}
 	if !strings.Contains(html, "const data = null;") && !strings.Contains(html, "const data = [];") {

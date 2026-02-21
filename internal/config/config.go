@@ -35,7 +35,7 @@ type Config struct {
 	Classify ClassifyRules `yaml:"classify"`
 }
 
-var supportedLangs = map[string]bool{"go": true, "js": true}
+var supportedLangs = map[string]bool{"go": true, "js": true, "multi": true}
 
 // Load reads .depviz.yml from root. If the file doesn't exist,
 // it returns DefaultFor(lang). Always returns a valid config or an error.

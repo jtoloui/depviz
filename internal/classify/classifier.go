@@ -35,7 +35,12 @@ func New(cfg *config.Config) (*Classifier, error) {
 
 // Classify returns the category for an import path.
 func (c *Classifier) Classify(imp string) config.Category {
-	if c.isStdlib(imp) {
+	return c.ClassifyWithLang(imp, c.lang)
+}
+
+// ClassifyWithLang categorises an import using the given language for stdlib detection.
+func (c *Classifier) ClassifyWithLang(imp, lang string) config.Category {
+	if isStdlibFor(imp, lang) {
 		return config.Stdlib
 	}
 	if matchesAny(imp, c.internal) {
@@ -67,8 +72,8 @@ var nodeBuiltins = map[string]bool{
 	"v8": true, "vm": true, "wasi": true, "worker_threads": true, "zlib": true,
 }
 
-func (c *Classifier) isStdlib(imp string) bool {
-	switch c.lang {
+func isStdlibFor(imp, lang string) bool {
+	switch lang {
 	case "js":
 		return nodeBuiltins[strings.TrimPrefix(imp, "node:")]
 	case "go":

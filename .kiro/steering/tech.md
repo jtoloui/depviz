@@ -45,3 +45,9 @@
 - Devicon (https://devicon.dev) — file type icons loaded via CDN stylesheet at runtime
 - MIT licensed; brand logos are property of their respective owners
 - Output HTML requires network access on first load (cached after)
+
+## Theme System
+- 14 built-in themes defined as CSS custom property blocks (`[data-theme="..."]`)
+- Theme selection persisted in localStorage (`depviz-theme` key)
+- No external dependencies — all theme colours are inline CSS variables
+- Each theme defines: bg, surface, border, text, text-muted, accent, 4 category colours + backgrounds, 3 code highlight colours

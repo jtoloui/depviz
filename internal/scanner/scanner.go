@@ -55,6 +55,7 @@ type ExportDetail struct {
 // FileImports represents a file and its imports.
 type FileImports struct {
 	File    string         `json:"file"`
+	Lang    string         `json:"-"`
 	Imports []string       `json:"imports"`
 	Details []ImportDetail `json:"details,omitempty"`
 	Exports []ExportDetail `json:"exports,omitempty"`

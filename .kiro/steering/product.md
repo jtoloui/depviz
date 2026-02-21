@@ -61,6 +61,19 @@ Help developers understand and explore the dependency landscape of their codebas
 - Configurable base font size via CSS variable
 - Template split into separate CSS/JS/HTML source files for maintainability (single-file output preserved)
 
+## Current Features (Multi-Language & UI ✅)
+
+- Multi-language scanning: `depviz scan -l multi` runs Go + JS/TS scanners in a single pass
+- MultiScanner delegates to GoScanner and TreeSitterScanner, merges results
+- Per-file language tagging (FileImports.Lang) for correct stdlib classification in mixed repos
+- Config defaults for multi: merged Go + JS excludes and classify rules
+- 14 built-in themes: Dark, Light, Solarized (dark/light), Catppuccin (Mocha/Latte), Nord, Dracula, Gruvbox (dark/light), Flat (dark/light), Lavender, Midnight, Slate, Sand, Melo, High Contrast
+- Theme selector dropdown in sidebar header with localStorage persistence
+- Collapsible file tree in sidebar — directory hierarchy with file counts, click to scroll to card
+- Reverse lookup state persisted in URL hash (`#rev=...`) for shareable links
+- Sticky toolbar: categories, view, sort controls moved to main content area header
+- Inline SVG favicon (no external files)
+
 ## What devs use it for today
 
 - Onboarding — "show me the dependency landscape of this codebase"
@@ -126,7 +139,6 @@ Help developers understand and explore the dependency landscape of their codebas
 - Move to own repo (`github.com/jtoloui/depviz`), set up goreleaser + GitHub Actions for releases
 - Homebrew tap for macOS distribution
 - Benchmarks — `testing.B` for scanner performance at 500/2000/5000 files, track regressions
-- Custom colour themes in config
 - Export as SVG/PNG for docs
 - Watch mode — `depviz serve --watch` auto-refresh on file changes
 - Plugin system for custom scanners (Python, Rust, etc.)

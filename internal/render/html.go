@@ -59,7 +59,7 @@ func HTML(w io.Writer, root string, results []scanner.FileImports, cl *classify.
 	for i, r := range results {
 		imps := make([]classifiedImport, len(r.Imports))
 		for j, imp := range r.Imports {
-			ci := classifiedImport{Name: imp, Category: cl.Classify(imp)}
+			ci := classifiedImport{Name: imp, Category: cl.ClassifyWithLang(imp, r.Lang)}
 			if j < len(r.Details) {
 				d := r.Details[j]
 				ci.Kind = d.Kind

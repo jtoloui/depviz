@@ -100,6 +100,10 @@ function readHash() {
     cats.forEach(c => active.add(c));
     document.querySelectorAll('.filter-btn').forEach(b => b.classList.toggle('active', active.has(b.dataset.cat)));
   }
+  if (p.has('rev')) {
+    const rev = p.get('rev');
+    if (reverseIndex[rev]) showReverse(rev);
+  }
 }
 function writeHash() {
   const p = new URLSearchParams();
@@ -111,10 +115,10 @@ function writeHash() {
   if (sort !== 'name-asc') p.set('sort', sort);
   const cats = [...active].sort().join(',');
   if (cats !== 'external,internal,private,stdlib') p.set('cats', cats);
+  if (selectedImport) p.set('rev', selectedImport);
   const h = p.toString();
   history.replaceState(null, '', h ? '#' + h : location.pathname);
 }
-readHash();
 
 // Filter buttons
 document.querySelectorAll('.filter-btn').forEach(btn => {
@@ -276,6 +280,61 @@ function fileIcon(path) {
   return cls ? '<i class="' + cls + ' colored"></i>' : '📄';
 }
 
+// File tree
+(function() {
+  const tree = {};
+  data.forEach(f => {
+    const parts = f.file.split('/');
+    let node = tree;
+    parts.forEach((p, i) => {
+      if (i === parts.length - 1) { (node.__files ??= []).push(f.file); }
+      else { node[p] ??= {}; node = node[p]; }
+    });
+  });
+  const el = document.getElementById('file-tree');
+  function renderDir(obj, depth) {
+    let html = '';
+    const dirs = Object.keys(obj).filter(k => k !== '__files').sort();
+    const files = (obj.__files || []).sort();
+    dirs.forEach(d => {
+      const count = countFiles(obj[d]);
+      html += '<div class="ft-dir" data-depth="' + depth + '" style="padding-left:' + (0.5 + depth * 0.75) + 'rem">' +
+        '<span class="ft-chevron">▾</span><span class="ft-label">📁 ' + d + '</span><span class="ft-count">' + count + '</span></div>' +
+        '<div class="ft-children">' + renderDir(obj[d], depth + 1) + '</div>';
+    });
+    files.forEach(f => {
+      const name = f.substring(f.lastIndexOf('/') + 1);
+      html += '<div class="ft-file" data-file="' + f + '" style="padding-left:' + (0.5 + depth * 0.75 + 0.8) + 'rem">' +
+        '<span class="ft-label">' + fileIcon(f) + ' ' + name + '</span></div>';
+    });
+    return html;
+  }
+  function countFiles(obj) {
+    let n = (obj.__files || []).length;
+    Object.keys(obj).filter(k => k !== '__files').forEach(k => n += countFiles(obj[k]));
+    return n;
+  }
+  el.innerHTML = renderDir(tree, 0);
+  el.addEventListener('click', e => {
+    const dir = e.target.closest('.ft-dir');
+    if (dir) {
+      const children = dir.nextElementSibling;
+      if (children && children.classList.contains('ft-children')) {
+        children.classList.toggle('collapsed');
+        dir.querySelector('.ft-chevron').classList.toggle('collapsed');
+      }
+      return;
+    }
+    const file = e.target.closest('.ft-file');
+    if (file) {
+      const card = document.querySelector('.card[data-file="' + file.dataset.file + '"]');
+      if (card) { card.scrollIntoView({ behavior: 'smooth', block: 'center' }); card.classList.add('highlighted'); setTimeout(() => card.classList.remove('highlighted'), 1500); }
+      el.querySelectorAll('.ft-file').forEach(f => f.classList.remove('active'));
+      file.classList.add('active');
+    }
+  });
+})();
+
 function sortData(items) {
   const mode = document.getElementById('sort').value;
   const sorted = [...items];
@@ -412,6 +471,7 @@ grid.addEventListener('click', e => {
   }
 });
 
+readHash();
 render();
 
 // Mobile sidebar toggle
@@ -425,15 +485,13 @@ function toggleSidebar() {
 menuToggle.addEventListener('click', toggleSidebar);
 overlay.addEventListener('click', toggleSidebar);
 
-// Theme toggle
-const themeBtn = document.getElementById('theme-toggle');
+// Theme select
+const themeSelect = document.getElementById('theme-select');
 function applyTheme(theme) {
   document.documentElement.setAttribute('data-theme', theme);
-  themeBtn.textContent = theme === 'light' ? '☾' : '☀';
+  themeSelect.value = theme;
   localStorage.setItem('depviz-theme', theme);
 }
-themeBtn.addEventListener('click', () => {
-  applyTheme(document.documentElement.getAttribute('data-theme') === 'light' ? 'dark' : 'light');
-});
+themeSelect.addEventListener('change', () => applyTheme(themeSelect.value));
 const saved = localStorage.getItem('depviz-theme');
 if (saved) applyTheme(saved);

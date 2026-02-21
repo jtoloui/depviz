@@ -13,19 +13,20 @@ dep-visualiser/
 │   ├── config/
 │   │   ├── config.go        ← Config type, Load (reads .depviz.yml), validate
 │   │   ├── config_test.go
-│   │   └── defaults.go      ← DefaultFor(lang) — JS and Go built-in defaults
+│   │   └── defaults.go      ← DefaultFor(lang) — JS, Go, and multi built-in defaults
 │   ├── render/
 │   │   ├── html.go          ← HTML function, embeds template + CSS + JS via //go:embed
 │   │   ├── html_test.go     ← Render tests: structure, JSON integrity, duplicate imports, empty results
 │   │   ├── template.html    ← HTML skeleton with {{.CSS}}, {{.JS}}, {{.DataJSON}} placeholders
-│   │   ├── styles.css       ← All CSS (dark/light themes, cards, sidebar, tooltips, responsive)
-│   │   └── app.js           ← All JS (render, search, filters, sort, icons, stats, keyboard shortcuts)
+│   │   ├── styles.css       ← All CSS (14 themes, cards, sidebar, toolbar, tooltips, responsive)
+│   │   └── app.js           ← All JS (render, search, filters, sort, icons, stats, file tree, keyboard shortcuts)
 │   └── scanner/
 │       ├── scanner.go       ← Scanner interface, FileImports, ImportDetail, ExportDetail types
 │       ├── scanner_test.go  ← Scanner tests: Go, JS, tree-sitter, walk, concurrency, edge cases
 │       ├── go.go            ← GoScanner — go/ast for imports (with aliases/blank/dot) + exported declarations + line counts
 │       ├── js.go            ← JSScanner — regex-based import/require matching (legacy, kept for reference)
 │       ├── treesitter.go    ← TreeSitterScanner — AST-based JS/TS parsing via pre-compiled tree-sitter queries + line counts
+│       ├── multi.go         ← MultiScanner — delegates to GoScanner + TreeSitterScanner, merges results
 │       └── walk.go          ← walkAndParse — concurrent fan-out worker pool (walker in WaitGroup, errors via channel)
 ├── e2e_test.go              ← End-to-end tests: full pipeline for Go and JS fixture projects
 ├── main.go                  ← Entry point, version injection via SetVersion
@@ -48,10 +49,10 @@ dep-visualiser/
 
 ```
 CLI flags + .depviz.yml → config.Load → Config
-Config → scanner.New{Go,TreeSitter}Scanner → Scanner
+Config → scanner.New{Go,TreeSitter,Multi}Scanner → Scanner
 Config → classify.New → Classifier
-Scanner.Scan(root) → []FileImports (with Details + Exports + Lines)
-[]FileImports + Classifier → render.HTML → io.Writer (single HTML file)
+Scanner.Scan(root) → []FileImports (with Details + Exports + Lines + Lang)
+[]FileImports + Classifier → render.HTML (ClassifyWithLang per file) → io.Writer (single HTML file)
 ```
 
 ## Key Interfaces
@@ -69,6 +70,7 @@ All scanners implement this. New languages = new file in scanner package + compi
 ```go
 type FileImports struct {
     File    string         // relative path from project root
+    Lang    string         // source language ("go" or "js") for per-file stdlib classification
     Imports []string       // module paths (for backward compat + classifier)
     Details []ImportDetail // rich import data: kind, names, alias, snippet, line
     Exports []ExportDetail // what the file exports: name, kind, private flag, line

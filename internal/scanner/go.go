@@ -117,5 +117,5 @@ func parseGoFile(root, path string) (*FileImports, error) {
 	}
 
 	rel, _ := filepath.Rel(root, path)
-	return &FileImports{File: rel, Imports: imports, Details: details, Exports: exports, Lines: bytes.Count(src, []byte{'\n'}) + 1}, nil
+	return &FileImports{File: rel, Lang: "go", Imports: imports, Details: details, Exports: exports, Lines: bytes.Count(src, []byte{'\n'}) + 1}, nil
 }

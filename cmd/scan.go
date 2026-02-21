@@ -83,6 +83,8 @@ func getScanner(cfg *config.Config) (scanner.Scanner, error) {
 		return scanner.NewGoScanner(cfg), nil
 	case "js":
 		return scanner.NewTreeSitterScanner(cfg), nil
+	case "multi":
+		return scanner.NewMultiScanner(cfg), nil
 	default:
 		return nil, fmt.Errorf("unsupported language: %q", cfg.Language)
 	}

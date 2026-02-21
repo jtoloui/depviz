@@ -1,125 +1,184 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>depviz — {{.Root}}</title>
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>◈</text></svg>">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/devicon.min.css">
-<style>
-{{.CSS}}
-</style>
-</head>
-<body>
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<title>depviz — {{.Root}}</title>
+		<link
+			rel="icon"
+			href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>◈</text></svg>"
+		/>
+		<link
+			rel="stylesheet"
+			href="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/devicon.min.css"
+		/>
+		<style>
+			{{.CSS}}
+		</style>
+	</head>
+	<body>
+		<button class="menu-toggle" id="menu-toggle">☰</button>
+		<div class="sidebar-overlay" id="sidebar-overlay"></div>
 
-<button class="menu-toggle" id="menu-toggle">☰</button>
-<div class="sidebar-overlay" id="sidebar-overlay"></div>
+		<aside class="sidebar" id="sidebar">
+			<div class="sidebar-header">
+				<h1><span>◈</span> depviz</h1>
+				<select class="theme-select" id="theme-select" title="Theme">
+					<option value="dark">Dark</option>
+					<option value="light">Light</option>
+					<option value="solarized-dark">Solarized Dark</option>
+					<option value="solarized-light">Solarized Light</option>
+					<option value="catppuccin">Catppuccin</option>
+					<option value="catppuccin-latte">Catppuccin Latte</option>
+					<option value="nord">Nord</option>
+					<option value="dracula">Dracula</option>
+					<option value="gruvbox">Gruvbox</option>
+					<option value="gruvbox-light">Gruvbox Light</option>
+					<option value="flat-dark">Flat Dark</option>
+					<option value="flat-light">Flat Light</option>
+					<option value="lavender">Lavender</option>
+					<option value="midnight">Midnight</option>
+					<option value="high-contrast">High Contrast</option>
+					<option value="slate">Slate</option>
+					<option value="sand">Sand</option>
+					<option value="melo">Melo</option>
+				</select>
+			</div>
 
-<aside class="sidebar" id="sidebar">
-  <div class="sidebar-header">
-    <h1><span>◈</span> depviz</h1>
-    <button class="theme-toggle" id="theme-toggle" title="Toggle theme">☀</button>
-  </div>
+			<div class="search-box">
+				<input
+					type="text"
+					id="search"
+					placeholder="Search files or imports..."
+					autocomplete="off"
+				/>
+			</div>
 
-  <div class="search-box">
-    <input type="text" id="search" placeholder="Search files or imports..." autocomplete="off" />
-  </div>
+			<h3 class="section-title">Files</h3>
+			<div class="file-tree" id="file-tree"></div>
 
-  <div class="filters">
-    <h3 class="section-title">Categories</h3>
-    <button class="filter-btn active" data-cat="stdlib">
-      <span class="dot dot-stdlib"></span> stdlib
-      <span class="count" id="count-stdlib">0</span>
-    </button>
-    <button class="filter-btn active" data-cat="internal">
-      <span class="dot dot-internal"></span> internal
-      <span class="count" id="count-internal">0</span>
-    </button>
-    <button class="filter-btn active" data-cat="private">
-      <span class="dot dot-private"></span> private
-      <span class="count" id="count-private">0</span>
-    </button>
-    <button class="filter-btn active" data-cat="external">
-      <span class="dot dot-external"></span> external
-      <span class="count" id="count-external">0</span>
-    </button>
-  </div>
+			<div class="reverse-panel" id="reverse-panel">
+				<div class="reverse-header">
+					<span class="reverse-title" id="reverse-title"></span>
+					<button class="reverse-close" id="reverse-close">✕</button>
+				</div>
+				<span class="reverse-count" id="reverse-count"></span>
+				<ul class="reverse-list" id="reverse-list"></ul>
+			</div>
 
-  <div>
-    <h3 class="section-title">View</h3>
-    <div class="view-group">
-      <button class="view-btn active" data-view="both">Both</button>
-      <button class="view-btn" data-view="imports">Imports</button>
-      <button class="view-btn" data-view="exports">Exports</button>
-    </div>
-  </div>
+			<div class="stats">
+				<div id="stat-files">0 files</div>
+				<div id="stat-imports">0 unique imports</div>
+				<div id="stat-exports">0 exports</div>
+				<div id="stat-avg"></div>
+				<div id="stat-lines"></div>
+				<div style="margin-top: 0.4rem">
+					<span class="stat-label"
+						>Languages<span class="stat-tip"
+							>Lines of code by file type</span
+						></span
+					>
+				</div>
+				<div class="cat-bar" id="lang-bar"></div>
+				<div class="cat-bar-legend" id="lang-legend"></div>
+				<div style="margin-top: 0.4rem">
+					<span class="stat-label"
+						>Category breakdown<span class="stat-tip"
+							>Percentage of imports by category</span
+						></span
+					>
+				</div>
+				<div class="cat-bar" id="cat-bar"></div>
+				<div class="cat-bar-legend" id="cat-bar-legend"></div>
+				<div style="margin-top: 0.4rem">
+					<span class="stat-label"
+						>Top imported<span class="stat-tip"
+							>Packages imported by the most files</span
+						></span
+					>
+				</div>
+				<ul class="top-imports" id="top-imports"></ul>
+				<div style="margin-top: 0.4rem" id="god-files-section">
+					<span class="stat-label"
+						>Coupling hotspots<span class="stat-tip"
+							>Files with 10+ imports — may indicate high coupling</span
+						></span
+					>
+				</div>
+				<ul class="top-imports" id="god-files"></ul>
+			</div>
+		</aside>
 
-  <div class="sort-row">
-    <h3 class="section-title">Sort</h3>
-    <select id="sort">
-      <option value="name-asc">Name A→Z</option>
-      <option value="name-desc">Name Z→A</option>
-      <option value="imports-desc">Most imports</option>
-      <option value="imports-asc">Fewest imports</option>
-      <option value="depended-desc">Most depended on</option>
-    </select>
-  </div>
+		<div class="code-panel" id="code-panel">
+			<div class="code-header">
+				<span class="code-title" id="code-title"></span>
+				<button class="code-close" id="code-close">✕</button>
+			</div>
+			<a class="code-link" id="code-link" href="#"></a>
+			<span class="code-kind" id="code-kind"></span>
+			<a class="code-usages" id="code-usages"></a>
+			<div class="code-pre-wrap">
+				<button class="code-copy" id="code-copy" title="Copy snippet">⎘</button>
+				<pre><code id="code-body"></code></pre>
+			</div>
+		</div>
 
-  <div class="reverse-panel" id="reverse-panel">
-    <div class="reverse-header">
-      <span class="reverse-title" id="reverse-title"></span>
-      <button class="reverse-close" id="reverse-close">✕</button>
-    </div>
-    <span class="reverse-count" id="reverse-count"></span>
-    <ul class="reverse-list" id="reverse-list"></ul>
-  </div>
+		<main class="main">
+			<div class="main-header">
+				<h2 id="root-path"></h2>
+				<span class="result-count" id="result-count"></span>
+			</div>
+			<div class="toolbar">
+				<div class="toolbar-group">
+					<span class="toolbar-label">Categories</span>
+					<div class="filters">
+						<button class="filter-btn active" data-cat="stdlib">
+							<span class="dot dot-stdlib"></span> stdlib
+							<span class="count" id="count-stdlib">0</span>
+						</button>
+						<button class="filter-btn active" data-cat="internal">
+							<span class="dot dot-internal"></span> internal
+							<span class="count" id="count-internal">0</span>
+						</button>
+						<button class="filter-btn active" data-cat="private">
+							<span class="dot dot-private"></span> private
+							<span class="count" id="count-private">0</span>
+						</button>
+						<button class="filter-btn active" data-cat="external">
+							<span class="dot dot-external"></span> external
+							<span class="count" id="count-external">0</span>
+						</button>
+					</div>
+				</div>
+				<div class="toolbar-group">
+					<span class="toolbar-label">View</span>
+					<div class="view-group">
+						<button class="view-btn active" data-view="both">Both</button>
+						<button class="view-btn" data-view="imports">Imports</button>
+						<button class="view-btn" data-view="exports">Exports</button>
+					</div>
+				</div>
+				<div class="toolbar-group">
+					<span class="toolbar-label">Sort</span>
+					<select id="sort">
+						<option value="name-asc">Name A→Z</option>
+						<option value="name-desc">Name Z→A</option>
+						<option value="imports-desc">Most imports</option>
+						<option value="imports-asc">Fewest imports</option>
+						<option value="depended-desc">Most depended on</option>
+					</select>
+				</div>
+			</div>
+			<div class="grid" id="grid"></div>
+			<div class="no-results" id="no-results" style="display: none">
+				No files match your search.
+			</div>
+		</main>
 
-  <div class="stats">
-    <div id="stat-files">0 files</div>
-    <div id="stat-imports">0 unique imports</div>
-    <div id="stat-exports">0 exports</div>
-    <div id="stat-avg"></div>
-    <div id="stat-lines"></div>
-    <div style="margin-top:0.4rem"><span class="stat-label">Languages<span class="stat-tip">Lines of code by file type</span></span></div>
-    <div class="cat-bar" id="lang-bar"></div>
-    <div class="cat-bar-legend" id="lang-legend"></div>
-    <div style="margin-top:0.4rem"><span class="stat-label">Category breakdown<span class="stat-tip">Percentage of imports by category</span></span></div>
-    <div class="cat-bar" id="cat-bar"></div>
-    <div class="cat-bar-legend" id="cat-bar-legend"></div>
-    <div style="margin-top:0.4rem"><span class="stat-label">Top imported<span class="stat-tip">Packages imported by the most files</span></span></div>
-    <ul class="top-imports" id="top-imports"></ul>
-    <div style="margin-top:0.4rem" id="god-files-section"><span class="stat-label">Coupling hotspots<span class="stat-tip">Files with 10+ imports — may indicate high coupling</span></span></div>
-    <ul class="top-imports" id="god-files"></ul>
-  </div>
-</aside>
-
-<div class="code-panel" id="code-panel">
-  <div class="code-header">
-    <span class="code-title" id="code-title"></span>
-    <button class="code-close" id="code-close">✕</button>
-  </div>
-  <a class="code-link" id="code-link" href="#"></a>
-  <span class="code-kind" id="code-kind"></span>
-  <a class="code-usages" id="code-usages"></a>
-  <div class="code-pre-wrap">
-    <button class="code-copy" id="code-copy" title="Copy snippet">⎘</button>
-    <pre><code id="code-body"></code></pre>
-  </div>
-</div>
-
-<main class="main">
-  <div class="main-header">
-    <h2 id="root-path"></h2>
-    <span class="result-count" id="result-count"></span>
-  </div>
-  <div class="grid" id="grid"></div>
-  <div class="no-results" id="no-results" style="display:none">No files match your search.</div>
-</main>
-
-<script>
-const data = {{.DataJSON}};
-const root = {{.Root}};
-{{.JS}}
-</script>
-</body>
+		<script>
+			const data = {{.DataJSON}};
+			const root = {{.Root}};
+			{{.JS}}
+		</script>
+	</body>
 </html>

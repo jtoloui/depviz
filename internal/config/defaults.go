@@ -16,6 +16,8 @@ func DefaultFor(lang, root string) (*Config, error) {
 		return defaultJS(), nil
 	case "go":
 		return defaultGo(root)
+	case "multi":
+		return defaultMulti(root)
 	default:
 		return nil, fmt.Errorf("unsupported language: %q", lang)
 	}
@@ -43,6 +45,23 @@ func defaultGo(root string) (*Config, error) {
 		Classify: ClassifyRules{
 			Internal: []string{`^` + regexpEscape(mod) + `/.*`},
 		},
+	}, nil
+}
+
+func defaultMulti(root string) (*Config, error) {
+	goCfg, err := defaultGo(root)
+	if err != nil {
+		return nil, err
+	}
+	jsCfg := defaultJS()
+
+	exclude := append(goCfg.Exclude, jsCfg.Exclude...)
+	internal := append(goCfg.Classify.Internal, jsCfg.Classify.Internal...)
+
+	return &Config{
+		Language: "multi",
+		Exclude:  exclude,
+		Classify: ClassifyRules{Internal: internal},
 	}, nil
 }
 

@@ -19,6 +19,7 @@ depviz is a CLI tool that scans your Go or JavaScript/TypeScript project, extrac
 
 - 🔍 **Go scanner** — uses `go/ast` to parse imports and exported declarations (fast, full AST)
 - 📦 **JS/TS scanner** — tree-sitter AST parser catches all import styles: `import`, `require`, dynamic `import()`, re-exports, type-only imports
+- 🌐 **Multi-language** — `depviz scan -l multi` scans Go + JS/TS in a single pass for mixed-language repos
 - 🎨 **4-colour classification** — stdlib (green), internal (purple), private/org (blue), external (orange)
 - 📋 **Rich import details** — hover any import to see kind (default/named/namespace/etc.) and named bindings
 - 📤 **Export capture** — see what each file exports: functions, classes, consts, types, interfaces
@@ -33,11 +34,13 @@ depviz is a CLI tool that scans your Go or JavaScript/TypeScript project, extrac
 - 📄 **Config file** — `.depviz.yml` for custom excludes, classification rules, and port
 - 🌐 **Live server** — `depviz serve` hosts the visualisation with graceful shutdown
 - 📱 **Responsive** — works on mobile with collapsible sidebar
-- 🌗 **Dark/light theme** — toggle with localStorage persistence
+- 🎭 **14 themes** — Dark, Light, Solarized, Catppuccin, Nord, Dracula, Gruvbox, Flat UI, Lavender, Midnight, Slate, Sand, Melo, High Contrast — persisted in localStorage
 - 🏷️ **File type icons** — Devicon icons for React, TypeScript, Go, Vite, Tailwind, Jest, etc.
+- 🌳 **File tree** — collapsible directory tree in sidebar, click to scroll to card
 - 📉 **Stats dashboard** — total files, imports, exports, lines, language breakdown, coupling hotspots
 - ⌨️ **Keyboard shortcuts** — Esc closes panels, / focuses search
-- 🔗 **Shareable URLs** — search, filters, view mode, sort persist in URL hash
+- 🔗 **Shareable URLs** — search, filters, view mode, sort, reverse lookup persist in URL hash
+- ◈ **Favicon** — inline SVG favicon, no external files needed
 
 ---
 
@@ -65,7 +68,7 @@ depviz scan ./my-project
 
 | Flag | Short | Default | Description |
 |------|-------|---------|-------------|
-| `--lang` | `-l` | `go` | Language: `go` or `js` |
+| `--lang` | `-l` | `go` | Language: `go`, `js`, or `multi` |
 | `--output` | `-o` | `<project>/.depviz/deps.html` | Output file path |
 | `--verbose` | `-v` | `false` | Enable debug logging |
 
@@ -77,6 +80,9 @@ depviz scan ./my-go-api
 
 # Scan a JS/TS project
 depviz scan -l js ./my-react-app
+
+# Scan a mixed Go + JS/TS project
+depviz scan -l multi ./my-fullstack-app
 
 # Custom output path
 depviz scan -o visualisation.html ./my-project
@@ -95,7 +101,7 @@ depviz serve ./my-project
 
 | Flag | Short | Default | Description |
 |------|-------|---------|-------------|
-| `--lang` | `-l` | `go` | Language: `go` or `js` |
+| `--lang` | `-l` | `go` | Language: `go`, `js`, or `multi` |
 | `--port` | `-p` | `3000` | Port to serve on |
 | `--verbose` | `-v` | `false` | Enable debug logging |
 
@@ -148,7 +154,7 @@ classify:
 
 | Field | Type | Description |
 |-------|------|-------------|
-| `language` | `string` | `go` or `js` — overrides the `-l` flag |
+| `language` | `string` | `go`, `js`, or `multi` — overrides the `-l` flag |
 | `port` | `int` | Port for `depviz serve` — overrides the `-p` flag |
 | `output` | `string` | Output file path for `depviz scan` — overrides the `-o` flag |
 | `exclude` | `[]string` | Directory/file names to skip during scanning |
@@ -210,6 +216,7 @@ dep-visualiser/
 │       ├── go.go            ← Go scanner (go/ast)
 │       ├── js.go            ← JS/TS scanner (regex, legacy)
 │       ├── treesitter.go    ← JS/TS scanner (tree-sitter AST)
+│       ├── multi.go         ← Multi-language scanner (Go + JS/TS)
 │       └── walk.go          ← Concurrent file walker
 ├── e2e_test.go              ← End-to-end pipeline tests
 ├── main.go

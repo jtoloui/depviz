@@ -1,0 +1,810 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<title>depviz — /Users/Jamie/Developer/depviz</title>
+		<link
+			rel="icon"
+			href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>◈</text></svg>"
+		/>
+		<link
+			rel="stylesheet"
+			href="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/devicon.min.css"
+		/>
+		<style>
+			  :root {
+    --font-size-base: 18px;
+    --bg: #0d1117; --surface: #161b22; --border: #30363d;
+    --text: #c9d1d9; --text-muted: #8b949e; --accent: #58a6ff;
+    --green: #56d364; --green-bg: #1f3a2d;
+    --purple: #bc8cff; --purple-bg: #2a1f3a;
+    --blue: #58a6ff; --blue-bg: #1f2a3a;
+    --orange: #f0883e; --orange-bg: #3a2a1f;
+    --radius: 8px;
+    --code-kw: #ff7b72; --code-str: #a5d6ff; --code-ident: #d2a8ff;
+  }
+  [data-theme="light"] {
+    --bg: #f6f8fa; --surface: #ffffff; --border: #d0d7de;
+    --text: #1f2328; --text-muted: #656d76; --accent: #0969da;
+    --green: #1a7f37; --green-bg: #dafbe1;
+    --purple: #8250df; --purple-bg: #eddeff;
+    --blue: #0969da; --blue-bg: #ddf4ff;
+    --orange: #bc4c00; --orange-bg: #fff1e5;
+    --code-kw: #cf222e; --code-str: #0a3069; --code-ident: #8250df;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { font-size: var(--font-size-base); }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); display: flex; height: 100vh; overflow: hidden; }
+
+  /* Sidebar */
+  .sidebar { width: 300px; min-width: 300px; background: var(--surface); border-right: 1px solid var(--border); display: flex; flex-direction: column; padding: 1.25rem; gap: 1rem; overflow-y: auto; }
+  .sidebar h1 { font-size: 1.1rem; color: var(--accent); display: flex; align-items: center; gap: 0.5rem; flex: 1; }
+  .sidebar h1 span { font-size: 1.2rem; }
+  .sidebar-header { display: flex; align-items: center; justify-content: space-between; }
+  .theme-toggle { background: none; border: 1px solid var(--border); border-radius: var(--radius); color: var(--text-muted); cursor: pointer; font-size: 0.9rem; padding: 0.25rem 0.5rem; line-height: 1; }
+  .theme-toggle:hover { color: var(--text); border-color: var(--accent); }
+
+  /* Search */
+  .search-box { position: relative; }
+  .search-box input { width: 100%; padding: 0.5rem 0.75rem 0.5rem 2rem; background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius); color: var(--text); font-size: 0.85rem; outline: none; transition: border-color 0.2s; }
+  .search-box input:focus { border-color: var(--accent); }
+  .search-box::before { content: '⌕'; position: absolute; left: 0.6rem; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-size: 0.9rem; }
+
+  /* Filters */
+  .filters { display: flex; flex-direction: column; gap: 0.5rem; }
+  .section-title { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); }
+  .filter-btn { display: flex; align-items: center; gap: 0.5rem; padding: 0.4rem 0.6rem; background: transparent; border: 1px solid var(--border); border-radius: var(--radius); color: var(--text); font-size: 0.8rem; cursor: pointer; transition: all 0.15s; }
+  .filter-btn:hover { background: var(--bg); }
+  .filter-btn.active { border-color: var(--accent); background: var(--bg); }
+  .filter-btn .dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  .filter-btn .count { margin-left: auto; color: var(--text-muted); font-size: 0.75rem; }
+
+  /* View toggle buttons */
+  .view-group { display: flex; gap: 0.35rem; margin-top: 0.5rem; }
+  .view-btn { padding: 0.35rem 0.6rem; background: transparent; border: 1px solid var(--border); border-radius: var(--radius); color: var(--text-muted); font-size: 0.75rem; cursor: pointer; transition: all 0.15s; }
+  .view-btn:hover { background: var(--bg); }
+  .view-btn.active { border-color: var(--accent); color: var(--text); background: var(--bg); }
+  .dot-stdlib { background: var(--green); }
+  .dot-internal { background: var(--purple); }
+  .dot-private { background: var(--blue); }
+  .dot-external { background: var(--orange); }
+
+  /* Sort */
+  .sort-row { display: flex; align-items: center; gap: 0.5rem; }
+  .sort-row select { flex: 1; padding: 0.35rem 0.5rem; background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius); color: var(--text); font-size: 0.8rem; outline: none; }
+  .sort-row select:focus { border-color: var(--accent); }
+
+  /* Reverse lookup panel */
+  .reverse-panel { display: none; flex-direction: column; gap: 0.5rem; padding: 0.75rem; background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius); }
+  .reverse-panel.visible { display: flex; }
+  .reverse-panel .reverse-header { display: flex; justify-content: space-between; align-items: center; }
+  .reverse-panel .reverse-title { font-size: 0.8rem; color: var(--accent); font-family: 'SF Mono', 'Fira Code', monospace; word-break: break-all; }
+  .reverse-panel .reverse-close { background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 1rem; padding: 0; line-height: 1; }
+  .reverse-panel .reverse-close:hover { color: var(--text); }
+  .reverse-list { list-style: none; display: flex; flex-direction: column; gap: 2px; max-height: 200px; overflow-y: auto; }
+  .reverse-list li { font-size: 0.78rem; padding: 0.25rem 0.4rem; border-radius: 4px; cursor: pointer; font-family: 'SF Mono', 'Fira Code', monospace; }
+  .reverse-list li:hover { background: var(--surface); }
+  .reverse-list a { color: var(--text); text-decoration: none; }
+  .reverse-list a:hover { color: var(--accent); }
+  .reverse-count { font-size: 0.75rem; color: var(--text-muted); }
+
+  /* Code preview panel — floating */
+  .code-panel { display: none; flex-direction: column; gap: 0.5rem; padding: 1rem; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); position: fixed; z-index: 60; width: 480px; max-width: 90vw; max-height: 60vh; overflow-y: auto; box-shadow: 0 8px 32px rgba(0,0,0,0.5); }
+  .code-panel.visible { display: flex; }
+  .code-panel .code-header { display: flex; justify-content: space-between; align-items: center; }
+  .code-panel .code-title { font-size: 0.75rem; color: var(--accent); font-family: 'SF Mono', 'Fira Code', monospace; word-break: break-all; }
+  .code-panel .code-close { background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 1rem; padding: 0; line-height: 1; }
+  .code-panel .code-close:hover { color: var(--text); }
+  .code-panel .code-kind { font-size: 0.65rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
+  .code-panel .code-link { font-size: 0.7rem; color: var(--accent); text-decoration: none; font-family: 'SF Mono', 'Fira Code', monospace; word-break: break-all; }
+  .code-panel .code-usages { font-size: 0.7rem; color: var(--accent); cursor: pointer; text-decoration: none; }
+  .code-panel .code-usages:hover { text-decoration: underline; }
+  .code-panel pre { margin: 0; padding: 0.6rem; background: var(--bg); border: 1px solid var(--border); border-radius: 6px; overflow-x: auto; max-height: 300px; }
+  .code-panel code { font-family: 'SF Mono', 'Fira Code', monospace; font-size: 0.72rem; color: var(--text); line-height: 1.5; white-space: pre; }
+  .code-panel code .kw { color: var(--code-kw); }
+  .code-panel code .str { color: var(--code-str); }
+  .code-panel code .ident { color: var(--code-ident); }
+  .code-panel code .punct { color: var(--text-muted); }
+
+  /* Stats */
+  .stats { font-size: 0.75rem; color: var(--text-muted); padding-top: 0.5rem; border-top: 1px solid var(--border); line-height: 1.6; }
+  .stats .stat-label { color: var(--text); position: relative; cursor: help; }
+  .stat-label .stat-tip { display: none; position: absolute; bottom: calc(100% + 6px); left: 0; background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 4px 8px; font-size: 0.65rem; white-space: nowrap; z-index: 10; color: var(--text-muted); box-shadow: 0 4px 12px rgba(0,0,0,0.4); pointer-events: none; font-weight: normal; text-transform: none; letter-spacing: normal; }
+  .stat-label .stat-tip::after { content: ''; position: absolute; top: 100%; left: 12px; border: 5px solid transparent; border-top-color: var(--border); }
+  .stat-label:hover .stat-tip { display: block; }
+  .top-imports { list-style: none; margin-top: 0.25rem; }
+  .top-imports li { display: flex; justify-content: space-between; gap: 0.5rem; padding: 1px 0; font-family: 'SF Mono', 'Fira Code', monospace; font-size: 0.7rem; }
+  .top-imports li span:first-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
+  .top-imports .ti-count { color: var(--accent); flex-shrink: 0; }
+  .cat-bar { display: flex; height: 6px; border-radius: 3px; overflow: hidden; margin-top: 0.25rem; }
+  .cat-bar span { transition: width 0.3s; }
+  .cat-bar-legend { display: flex; flex-wrap: wrap; gap: 0.3rem 0.6rem; margin-top: 0.25rem; font-size: 0.65rem; }
+  .cat-bar-legend span::before { content: ''; display: inline-block; width: 6px; height: 6px; border-radius: 50%; margin-right: 3px; vertical-align: middle; }
+
+  /* Main content */
+  .main { flex: 1; overflow-y: auto; padding: 1.5rem; }
+  .main-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem; }
+  .main-header h2 { font-size: 0.85rem; color: var(--text-muted); font-weight: 400; }
+  .result-count { font-size: 0.8rem; color: var(--text-muted); }
+
+  /* Grid */
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(360px, 1fr)); gap: 0.75rem; }
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 1rem; transition: border-color 0.15s, padding 0.15s; }
+  .card:hover { border-color: var(--accent); }
+  .card.highlighted { border-color: var(--accent); background: #1c2333; }
+  .card-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.75rem; cursor: pointer; }
+  .card-header .file-info { display: flex; align-items: center; gap: 0.5rem; flex: 1; min-width: 0; }
+  .card-header a { color: var(--accent); text-decoration: none; font-size: 0.85rem; font-family: 'SF Mono', 'Fira Code', monospace; word-break: break-all; }
+  .card-header a:hover { text-decoration: underline; }
+  .card-header .file-icon { font-size: 1rem; line-height: 1; }
+  [data-theme="light"] .card-header .file-icon i { color: var(--text-muted) !important; }
+  .card-header .header-right { display: flex; align-items: center; gap: 0.4rem; }
+  .card-header .import-count { font-size: 0.7rem; color: var(--text-muted); background: var(--bg); padding: 2px 6px; border-radius: 10px; }
+  .card-header .collapse-btn { background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 0.7rem; padding: 2px 4px; line-height: 1; transition: transform 0.15s; }
+  .card-header .collapse-btn:hover { color: var(--text); }
+  .card.collapsed { padding-bottom: 0.5rem; }
+  .card.collapsed .card-header { margin-bottom: 0; }
+  .card.collapsed .card-section { display: none; }
+  .card.collapsed .collapse-btn { transform: rotate(-90deg); }
+  .tags { display: flex; flex-wrap: wrap; gap: 6px; }
+
+  /* Card sections */
+  .card-section { margin-top: 1rem; }
+  .card-section:first-of-type { margin-top: 0.5rem; }
+  .card-section-label { font-size: 0.6rem; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted); margin-bottom: 6px; }
+  .tag { display: inline-block; font-size: 0.7rem; padding: 2px 8px; border-radius: 12px; font-family: 'SF Mono', 'Fira Code', monospace; cursor: pointer; transition: outline 0.1s; position: relative; }
+  .tag:hover { outline: 1px solid var(--accent); }
+  .tag.selected { outline: 2px solid var(--accent); }
+  .tag-stdlib { background: var(--green-bg); color: var(--green); }
+  .tag-internal { background: var(--purple-bg); color: var(--purple); }
+  .tag-private { background: var(--blue-bg); color: var(--blue); }
+  .tag-external { background: var(--orange-bg); color: var(--orange); }
+
+  /* Export tags — outlined style */
+  .export-row { display: flex; flex-wrap: wrap; gap: 6px; }
+  .export-row.hidden { display: none; }
+  .etag { display: inline-block; font-size: 0.65rem; padding: 1px 7px; border-radius: 12px; font-family: 'SF Mono', 'Fira Code', monospace; border: 1px solid var(--border); color: var(--text); background: transparent; cursor: pointer; transition: outline 0.1s; position: relative; }
+  .etag:hover { outline: 1px solid var(--accent); }
+  .etag:hover .etag-detail { display: block; }
+  .etag .ekind { opacity: 0.4; margin-left: 3px; font-size: 0.55rem; }
+  .etag.private { opacity: 0.65; border-style: dashed; }
+
+  /* Export tooltip */
+  .etag-detail { display: none; position: absolute; bottom: calc(100% + 6px); left: 50%; transform: translateX(-50%); background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 4px 8px; font-size: 0.6rem; white-space: nowrap; z-index: 10; color: var(--text-muted); box-shadow: 0 4px 12px rgba(0,0,0,0.4); pointer-events: none; }
+  .etag-detail::after { content: ''; position: absolute; top: 100%; left: 50%; transform: translateX(-50%); border: 5px solid transparent; border-top-color: var(--border); }
+
+  /* Copy button */
+  .code-copy { position: absolute; top: 0.4rem; right: 0.4rem; background: var(--surface); border: 1px solid var(--border); border-radius: 4px; color: var(--text-muted); cursor: pointer; font-size: 0.65rem; padding: 2px 6px; transition: all 0.15s; }
+  .code-copy:hover { color: var(--text); border-color: var(--accent); }
+  .code-pre-wrap { position: relative; }
+
+  /* Empty section */
+  .section-empty { font-size: 0.65rem; color: var(--text-muted); font-style: italic; }
+
+  /* Import detail tooltip */
+  .tag-detail { display: none; position: absolute; bottom: calc(100% + 6px); left: 50%; transform: translateX(-50%); background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 6px 10px; font-size: 0.65rem; white-space: nowrap; z-index: 10; color: var(--text-muted); box-shadow: 0 4px 12px rgba(0,0,0,0.4); pointer-events: none; }
+  .tag-detail::after { content: ''; position: absolute; top: 100%; left: 50%; transform: translateX(-50%); border: 5px solid transparent; border-top-color: var(--border); }
+  .tag:hover .tag-detail { display: block; }
+  .tag-detail .detail-kind { color: var(--accent); font-weight: 600; }
+  .tag-detail .detail-names { color: var(--text); margin-top: 2px; }
+
+  .no-results { text-align: center; padding: 3rem; color: var(--text-muted); }
+
+  /* Mobile toggle */
+  .menu-toggle { display: none; position: fixed; top: 0.75rem; left: 0.75rem; z-index: 100; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); color: var(--text); font-size: 1.2rem; padding: 0.4rem 0.6rem; cursor: pointer; line-height: 1; }
+  .sidebar-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 49; }
+
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+  /* Tablet */
+  @media (max-width: 900px) {
+    .grid { grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); }
+  }
+
+  /* Mobile */
+  @media (max-width: 640px) {
+    .menu-toggle { display: block; }
+    body { flex-direction: column; }
+    .sidebar { position: fixed; left: -320px; top: 0; bottom: 0; z-index: 50; width: 280px; min-width: 280px; transition: left 0.25s ease; }
+    .sidebar.open { left: 0; }
+    .sidebar-overlay.visible { display: block; }
+    .main { padding: 1rem; padding-top: 3.5rem; height: 100vh; }
+    .grid { grid-template-columns: 1fr; }
+    .card-header a { font-size: 0.78rem; }
+    .tag { font-size: 0.65rem; padding: 2px 6px; }
+  }
+
+		</style>
+	</head>
+	<body>
+		<button class="menu-toggle" id="menu-toggle">☰</button>
+		<div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+		<aside class="sidebar" id="sidebar">
+			<div class="sidebar-header">
+				<h1><span>◈</span> depviz</h1>
+				<button class="theme-toggle" id="theme-toggle" title="Toggle theme">
+					☀
+				</button>
+			</div>
+
+			<div class="search-box">
+				<input
+					type="text"
+					id="search"
+					placeholder="Search files or imports..."
+					autocomplete="off"
+				/>
+			</div>
+
+			<div class="filters">
+				<h3 class="section-title">Categories</h3>
+				<button class="filter-btn active" data-cat="stdlib">
+					<span class="dot dot-stdlib"></span> stdlib
+					<span class="count" id="count-stdlib">0</span>
+				</button>
+				<button class="filter-btn active" data-cat="internal">
+					<span class="dot dot-internal"></span> internal
+					<span class="count" id="count-internal">0</span>
+				</button>
+				<button class="filter-btn active" data-cat="private">
+					<span class="dot dot-private"></span> private
+					<span class="count" id="count-private">0</span>
+				</button>
+				<button class="filter-btn active" data-cat="external">
+					<span class="dot dot-external"></span> external
+					<span class="count" id="count-external">0</span>
+				</button>
+			</div>
+
+			<div>
+				<h3 class="section-title">View</h3>
+				<div class="view-group">
+					<button class="view-btn active" data-view="both">Both</button>
+					<button class="view-btn" data-view="imports">Imports</button>
+					<button class="view-btn" data-view="exports">Exports</button>
+				</div>
+			</div>
+
+			<div class="sort-row">
+				<h3 class="section-title">Sort</h3>
+				<select id="sort">
+					<option value="name-asc">Name A→Z</option>
+					<option value="name-desc">Name Z→A</option>
+					<option value="imports-desc">Most imports</option>
+					<option value="imports-asc">Fewest imports</option>
+					<option value="depended-desc">Most depended on</option>
+				</select>
+			</div>
+
+			<div class="reverse-panel" id="reverse-panel">
+				<div class="reverse-header">
+					<span class="reverse-title" id="reverse-title"></span>
+					<button class="reverse-close" id="reverse-close">✕</button>
+				</div>
+				<span class="reverse-count" id="reverse-count"></span>
+				<ul class="reverse-list" id="reverse-list"></ul>
+			</div>
+
+			<div class="stats">
+				<div id="stat-files">0 files</div>
+				<div id="stat-imports">0 unique imports</div>
+				<div id="stat-exports">0 exports</div>
+				<div id="stat-avg"></div>
+				<div id="stat-lines"></div>
+				<div style="margin-top: 0.4rem">
+					<span class="stat-label"
+						>Languages<span class="stat-tip"
+							>Lines of code by file type</span
+						></span
+					>
+				</div>
+				<div class="cat-bar" id="lang-bar"></div>
+				<div class="cat-bar-legend" id="lang-legend"></div>
+				<div style="margin-top: 0.4rem">
+					<span class="stat-label"
+						>Category breakdown<span class="stat-tip"
+							>Percentage of imports by category</span
+						></span
+					>
+				</div>
+				<div class="cat-bar" id="cat-bar"></div>
+				<div class="cat-bar-legend" id="cat-bar-legend"></div>
+				<div style="margin-top: 0.4rem">
+					<span class="stat-label"
+						>Top imported<span class="stat-tip"
+							>Packages imported by the most files</span
+						></span
+					>
+				</div>
+				<ul class="top-imports" id="top-imports"></ul>
+				<div style="margin-top: 0.4rem" id="god-files-section">
+					<span class="stat-label"
+						>Coupling hotspots<span class="stat-tip"
+							>Files with 10+ imports — may indicate high coupling</span
+						></span
+					>
+				</div>
+				<ul class="top-imports" id="god-files"></ul>
+			</div>
+		</aside>
+
+		<div class="code-panel" id="code-panel">
+			<div class="code-header">
+				<span class="code-title" id="code-title"></span>
+				<button class="code-close" id="code-close">✕</button>
+			</div>
+			<a class="code-link" id="code-link" href="#"></a>
+			<span class="code-kind" id="code-kind"></span>
+			<a class="code-usages" id="code-usages"></a>
+			<div class="code-pre-wrap">
+				<button class="code-copy" id="code-copy" title="Copy snippet">⎘</button>
+				<pre><code id="code-body"></code></pre>
+			</div>
+		</div>
+
+		<main class="main">
+			<div class="main-header">
+				<h2 id="root-path"></h2>
+				<span class="result-count" id="result-count"></span>
+			</div>
+			<div class="grid" id="grid"></div>
+			<div class="no-results" id="no-results" style="display: none">
+				No files match your search.
+			</div>
+		</main>
+
+		<script>
+			const data = [{"file":"cmd/root.go","imports":[{"name":"fmt","category":"stdlib","kind":"named","snippet":"\"fmt\"","line":4},{"name":"log/slog","category":"stdlib","kind":"named","snippet":"\"log/slog\"","line":5},{"name":"os","category":"stdlib","kind":"named","snippet":"\"os\"","line":6},{"name":"github.com/spf13/cobra","category":"external","kind":"named","snippet":"\"github.com/spf13/cobra\"","line":8}],"exports":[{"name":"rootCmd","kind":"var","private":true,"line":11},{"name":"lang","kind":"var","private":true,"line":26},{"name":"verbose","kind":"var","private":true,"line":27},{"name":"init","kind":"func","private":true,"line":30},{"name":"Execute","kind":"func","line":35},{"name":"SetVersion","kind":"func","line":42}],"lines":45},{"file":"cmd/scan.go","imports":[{"name":"fmt","category":"stdlib","kind":"named","snippet":"\"fmt\"","line":4},{"name":"log/slog","category":"stdlib","kind":"named","snippet":"\"log/slog\"","line":5},{"name":"os","category":"stdlib","kind":"named","snippet":"\"os\"","line":6},{"name":"path/filepath","category":"stdlib","kind":"named","snippet":"\"path/filepath\"","line":7},{"name":"github.com/jtoloui/depviz/internal/classify","category":"internal","kind":"named","snippet":"\"github.com/jtoloui/depviz/internal/classify\"","line":9},{"name":"github.com/jtoloui/depviz/internal/config","category":"internal","kind":"named","snippet":"\"github.com/jtoloui/depviz/internal/config\"","line":10},{"name":"github.com/jtoloui/depviz/internal/render","category":"internal","kind":"named","snippet":"\"github.com/jtoloui/depviz/internal/render\"","line":11},{"name":"github.com/jtoloui/depviz/internal/scanner","category":"internal","kind":"named","snippet":"\"github.com/jtoloui/depviz/internal/scanner\"","line":12},{"name":"github.com/spf13/cobra","category":"external","kind":"named","snippet":"\"github.com/spf13/cobra\"","line":13}],"exports":[{"name":"output","kind":"var","private":true,"line":16},{"name":"init","kind":"func","private":true,"line":18},{"name":"scanCmd","kind":"var","private":true,"line":23},{"name":"getScanner","kind":"func","private":true,"line":80},{"name":"resolveOutput","kind":"func","private":true,"line":93}],"lines":102},{"file":"internal/config/defaults.go","imports":[{"name":"bufio","category":"stdlib","kind":"named","snippet":"\"bufio\"","line":4},{"name":"fmt","category":"stdlib","kind":"named","snippet":"\"fmt\"","line":5},{"name":"os","category":"stdlib","kind":"named","snippet":"\"os\"","line":6},{"name":"path/filepath","category":"stdlib","kind":"named","snippet":"\"path/filepath\"","line":7},{"name":"strings","category":"stdlib","kind":"named","snippet":"\"strings\"","line":8}],"exports":[{"name":"DefaultFor","kind":"func","line":13},{"name":"defaultJS","kind":"func","private":true,"line":26},{"name":"defaultGo","kind":"func","private":true,"line":36},{"name":"defaultMulti","kind":"func","private":true,"line":51},{"name":"readModulePath","kind":"func","private":true,"line":69},{"name":"regexpEscape","kind":"func","private":true,"line":87}],"lines":92},{"file":"internal/classify/classifier.go","imports":[{"name":"regexp","category":"stdlib","kind":"named","snippet":"\"regexp\"","line":4},{"name":"strings","category":"stdlib","kind":"named","snippet":"\"strings\"","line":5},{"name":"github.com/jtoloui/depviz/internal/config","category":"internal","kind":"named","snippet":"\"github.com/jtoloui/depviz/internal/config\"","line":7}],"exports":[{"name":"Classifier","kind":"type","line":11},{"name":"New","kind":"func","line":18},{"name":"nodeBuiltins","kind":"var","private":true,"line":55},{"name":"isStdlibFor","kind":"func","private":true,"line":75},{"name":"matchesAny","kind":"func","private":true,"line":85},{"name":"compileAll","kind":"func","private":true,"line":94}],"lines":105},{"file":"cmd/serve.go","imports":[{"name":"context","category":"stdlib","kind":"named","snippet":"\"context\"","line":4},{"name":"errors","category":"stdlib","kind":"named","snippet":"\"errors\"","line":5},{"name":"fmt","category":"stdlib","kind":"named","snippet":"\"fmt\"","line":6},{"name":"log/slog","category":"stdlib","kind":"named","snippet":"\"log/slog\"","line":7},{"name":"net","category":"stdlib","kind":"named","snippet":"\"net\"","line":8},{"name":"net/http","category":"stdlib","kind":"named","snippet":"\"net/http\"","line":9},{"name":"os/signal","category":"stdlib","kind":"named","snippet":"\"os/signal\"","line":10},{"name":"path/filepath","category":"stdlib","kind":"named","snippet":"\"path/filepath\"","line":11},{"name":"syscall","category":"stdlib","kind":"named","snippet":"\"syscall\"","line":12},{"name":"time","category":"stdlib","kind":"named","snippet":"\"time\"","line":13},{"name":"github.com/jtoloui/depviz/internal/classify","category":"internal","kind":"named","snippet":"\"github.com/jtoloui/depviz/internal/classify\"","line":15},{"name":"github.com/jtoloui/depviz/internal/config","category":"internal","kind":"named","snippet":"\"github.com/jtoloui/depviz/internal/config\"","line":16},{"name":"github.com/jtoloui/depviz/internal/render","category":"internal","kind":"named","snippet":"\"github.com/jtoloui/depviz/internal/render\"","line":17},{"name":"github.com/spf13/cobra","category":"external","kind":"named","snippet":"\"github.com/spf13/cobra\"","line":18}],"exports":[{"name":"port","kind":"var","private":true,"line":21},{"name":"init","kind":"func","private":true,"line":23},{"name":"serveCmd","kind":"var","private":true,"line":28},{"name":"resolvePort","kind":"func","private":true,"line":106}],"lines":112},{"file":"internal/render/html.go","imports":[{"name":"embed","category":"stdlib","kind":"blank","snippet":"_ \"embed\"","line":4},{"name":"encoding/json","category":"stdlib","kind":"named","snippet":"\"encoding/json\"","line":5},{"name":"html/template","category":"stdlib","kind":"named","snippet":"\"html/template\"","line":6},{"name":"io","category":"stdlib","kind":"named","snippet":"\"io\"","line":7},{"name":"github.com/jtoloui/depviz/internal/classify","category":"internal","kind":"named","snippet":"\"github.com/jtoloui/depviz/internal/classify\"","line":9},{"name":"github.com/jtoloui/depviz/internal/config","category":"internal","kind":"named","snippet":"\"github.com/jtoloui/depviz/internal/config\"","line":10},{"name":"github.com/jtoloui/depviz/internal/scanner","category":"internal","kind":"named","snippet":"\"github.com/jtoloui/depviz/internal/scanner\"","line":11}],"exports":[{"name":"tmplHTML","kind":"var","private":true,"line":15},{"name":"cssContent","kind":"var","private":true,"line":18},{"name":"jsContent","kind":"var","private":true,"line":21},{"name":"tmpl","kind":"var","private":true,"line":23},{"name":"classifiedImport","kind":"type","private":true,"line":25},{"name":"exportData","kind":"type","private":true,"line":35},{"name":"fileData","kind":"type","private":true,"line":42},{"name":"templateData","kind":"type","private":true,"line":49},{"name":"HTML","kind":"func","line":57}],"lines":95},{"file":"internal/scanner/multi.go","imports":[{"name":"github.com/jtoloui/depviz/internal/config","category":"internal","kind":"named","snippet":"\"github.com/jtoloui/depviz/internal/config\"","line":3}],"exports":[{"name":"MultiScanner","kind":"type","line":8},{"name":"NewMultiScanner","kind":"func","line":13}],"lines":28},{"file":"internal/scanner/scanner.go","imports":[],"exports":[{"name":"ImportKind","kind":"type","line":4},{"name":"ImportDefault","kind":"const","line":7},{"name":"ImportNamed","kind":"const","line":8},{"name":"ImportNamespace","kind":"const","line":9},{"name":"ImportSideEffect","kind":"const","line":10},{"name":"ImportRequire","kind":"const","line":11},{"name":"ImportDynamic","kind":"const","line":12},{"name":"ImportReExport","kind":"const","line":13},{"name":"ImportReExportAll","kind":"const","line":14},{"name":"ImportType","kind":"const","line":15},{"name":"ImportBlank","kind":"const","line":17},{"name":"ImportDot","kind":"const","line":18},{"name":"ImportAlias","kind":"const","line":19},{"name":"ImportDetail","kind":"type","line":23},{"name":"ExportKind","kind":"type","line":33},{"name":"ExportFunction","kind":"const","line":36},{"name":"ExportClass","kind":"const","line":37},{"name":"ExportConst","kind":"const","line":38},{"name":"ExportVar","kind":"const","line":39},{"name":"ExportType","kind":"const","line":40},{"name":"ExportInterface","kind":"const","line":41},{"name":"ExportDefault","kind":"const","line":42},{"name":"ExportNamed","kind":"const","line":43},{"name":"ExportReExport","kind":"const","line":44},{"name":"ExportDetail","kind":"type","line":48},{"name":"FileImports","kind":"type","line":56},{"name":"Scanner","kind":"type","line":66},{"name":"toSet","kind":"func","private":true,"line":71}],"lines":78},{"file":"internal/config/config.go","imports":[{"name":"errors","category":"stdlib","kind":"named","snippet":"\"errors\"","line":4},{"name":"fmt","category":"stdlib","kind":"named","snippet":"\"fmt\"","line":5},{"name":"os","category":"stdlib","kind":"named","snippet":"\"os\"","line":6},{"name":"path/filepath","category":"stdlib","kind":"named","snippet":"\"path/filepath\"","line":7},{"name":"regexp","category":"stdlib","kind":"named","snippet":"\"regexp\"","line":8},{"name":"gopkg.in/yaml.v3","category":"external","kind":"named","snippet":"\"gopkg.in/yaml.v3\"","line":10}],"exports":[{"name":"Category","kind":"type","line":14},{"name":"Stdlib","kind":"const","line":17},{"name":"Internal","kind":"const","line":18},{"name":"Private","kind":"const","line":19},{"name":"External","kind":"const","line":20},{"name":"ClassifyRules","kind":"type","line":24},{"name":"Config","kind":"type","line":30},{"name":"supportedLangs","kind":"var","private":true,"line":38},{"name":"Load","kind":"func","line":42}],"lines":94},{"file":"internal/scanner/js.go","imports":[{"name":"bufio","category":"stdlib","kind":"named","snippet":"\"bufio\"","line":4},{"name":"os","category":"stdlib","kind":"named","snippet":"\"os\"","line":5},{"name":"path/filepath","category":"stdlib","kind":"named","snippet":"\"path/filepath\"","line":6},{"name":"regexp","category":"stdlib","kind":"named","snippet":"\"regexp\"","line":7},{"name":"github.com/jtoloui/depviz/internal/config","category":"internal","kind":"named","snippet":"\"github.com/jtoloui/depviz/internal/config\"","line":9}],"exports":[{"name":"jsImportRe","kind":"var","private":true,"line":14},{"name":"JSScanner","kind":"type","line":16},{"name":"NewJSScanner","kind":"func","line":20},{"name":"parseJSFile","kind":"func","private":true,"line":35}],"lines":61},{"file":"internal/scanner/walk.go","imports":[{"name":"os","category":"stdlib","kind":"named","snippet":"\"os\"","line":4},{"name":"path/filepath","category":"stdlib","kind":"named","snippet":"\"path/filepath\"","line":5},{"name":"runtime","category":"stdlib","kind":"named","snippet":"\"runtime\"","line":6},{"name":"sync","category":"stdlib","kind":"named","snippet":"\"sync\"","line":7}],"exports":[{"name":"parseFunc","kind":"type","private":true,"line":12},{"name":"walkAndParse","kind":"func","private":true,"line":16}],"lines":79},{"file":"main.go","imports":[{"name":"github.com/jtoloui/depviz/cmd","category":"internal","kind":"named","snippet":"\"github.com/jtoloui/depviz/cmd\"","line":3}],"exports":[{"name":"version","kind":"var","private":true,"line":5},{"name":"init","kind":"func","private":true,"line":7},{"name":"main","kind":"func","private":true,"line":11}],"lines":14},{"file":"internal/scanner/go.go","imports":[{"name":"bytes","category":"stdlib","kind":"named","snippet":"\"bytes\"","line":4},{"name":"go/ast","category":"stdlib","kind":"named","snippet":"\"go/ast\"","line":5},{"name":"go/parser","category":"stdlib","kind":"named","snippet":"\"go/parser\"","line":6},{"name":"go/token","category":"stdlib","kind":"named","snippet":"\"go/token\"","line":7},{"name":"os","category":"stdlib","kind":"named","snippet":"\"os\"","line":8},{"name":"path/filepath","category":"stdlib","kind":"named","snippet":"\"path/filepath\"","line":9},{"name":"strings","category":"stdlib","kind":"named","snippet":"\"strings\"","line":10},{"name":"github.com/jtoloui/depviz/internal/config","category":"internal","kind":"named","snippet":"\"github.com/jtoloui/depviz/internal/config\"","line":12}],"exports":[{"name":"GoScanner","kind":"type","line":17},{"name":"NewGoScanner","kind":"func","line":21},{"name":"parseGoFile","kind":"func","private":true,"line":37}],"lines":122},{"file":"internal/scanner/treesitter.go","imports":[{"name":"bytes","category":"stdlib","kind":"named","snippet":"\"bytes\"","line":4},{"name":"fmt","category":"stdlib","kind":"named","snippet":"\"fmt\"","line":5},{"name":"os","category":"stdlib","kind":"named","snippet":"\"os\"","line":6},{"name":"path/filepath","category":"stdlib","kind":"named","snippet":"\"path/filepath\"","line":7},{"name":"unsafe","category":"stdlib","kind":"named","snippet":"\"unsafe\"","line":8},{"name":"github.com/tree-sitter/go-tree-sitter","category":"external","kind":"alias","alias":"tree_sitter","snippet":"tree_sitter \"github.com/tree-sitter/go-tree-sitter\"","line":10},{"name":"github.com/tree-sitter/tree-sitter-javascript/bindings/go","category":"external","kind":"alias","alias":"tree_sitter_javascript","snippet":"tree_sitter_javascript \"github.com/tree-sitter/tree-sitter-javascript/bindings/go\"","line":11},{"name":"github.com/tree-sitter/tree-sitter-typescript/bindings/go","category":"external","kind":"alias","alias":"tree_sitter_typescript","snippet":"tree_sitter_typescript \"github.com/tree-sitter/tree-sitter-typescript/bindings/go\"","line":12},{"name":"github.com/jtoloui/depviz/internal/config","category":"internal","kind":"named","snippet":"\"github.com/jtoloui/depviz/internal/config\"","line":14}],"exports":[{"name":"importQuery","kind":"const","private":true,"line":20},{"name":"TreeSitterScanner","kind":"type","line":32},{"name":"NewTreeSitterScanner","kind":"func","line":36},{"name":"languageForExt","kind":"func","private":true,"line":68},{"name":"stripQuotes","kind":"func","private":true,"line":80},{"name":"nodeText","kind":"func","private":true,"line":88},{"name":"extractDetail","kind":"func","private":true,"line":147},{"name":"stmtSnippet","kind":"func","private":true,"line":188},{"name":"extractImportStatement","kind":"func","private":true,"line":198},{"name":"extractExportStatement","kind":"func","private":true,"line":245},{"name":"collectNames","kind":"func","private":true,"line":261},{"name":"collectSpecifiers","kind":"func","private":true,"line":276},{"name":"childByKind","kind":"func","private":true,"line":287},{"name":"hasChildKind","kind":"func","private":true,"line":296},{"name":"extractExports","kind":"func","private":true,"line":302},{"name":"hasExportDecl","kind":"func","private":true,"line":403}],"lines":412}];
+			const root = "/Users/Jamie/Developer/depviz";
+			// Build reverse index: import name → [files]
+const reverseIndex = {};
+data.forEach(f => f.imports.forEach(i => {
+  (reverseIndex[i.name] ??= []).push(f.file);
+}));
+
+// Build depended-on count per file (how many other files import it)
+const dependedOn = {};
+const fileSet = new Set(data.map(f => f.file));
+data.forEach(f => f.imports.forEach(i => {
+  if (i.category !== 'internal') return;
+  const norm = i.name.replace(/^\.\.?\//, '');
+  for (const file of fileSet) {
+    if (file.includes(norm)) { dependedOn[file] = (dependedOn[file] || 0) + 1; break; }
+  }
+}));
+
+// Category counts
+const catCounts = { stdlib: 0, internal: 0, private: 0, external: 0 };
+data.forEach(f => f.imports.forEach(i => catCounts[i.category]++));
+Object.keys(catCounts).forEach(c => {
+  const el = document.getElementById('count-' + c);
+  if (el) el.textContent = catCounts[c];
+});
+
+// Stats
+const allNames = data.flatMap(f => f.imports.map(i => i.name));
+const totalExports = data.reduce((n, f) => n + (f.exports || []).length, 0);
+const avg = data.length ? (allNames.length / data.length).toFixed(1) : 0;
+document.getElementById('stat-files').textContent = data.length + ' files';
+document.getElementById('stat-imports').textContent = new Set(allNames).size + ' unique imports';
+document.getElementById('stat-exports').textContent = totalExports + ' exports';
+document.getElementById('stat-avg').textContent = avg + ' avg imports/file';
+// Line count & language breakdown
+const totalLines = data.reduce((n, f) => n + (f.lines || 0), 0);
+document.getElementById('stat-lines').textContent = totalLines.toLocaleString() + ' total lines';
+const langMap = {};
+data.forEach(f => {
+  const ext = f.file.substring(f.file.lastIndexOf('.'));
+  langMap[ext] = (langMap[ext] || 0) + (f.lines || 0);
+});
+const langs = Object.entries(langMap).sort((a, b) => b[1] - a[1]);
+const langColors = { '.ts': '#3178c6', '.tsx': '#61dafb', '.js': '#f7df1e', '.jsx': '#61dafb', '.mjs': '#f7df1e', '.go': '#00add8', '.css': '#563d7c', '.scss': '#c6538c', '.html': '#e34c26', '.json': '#a8a8a8', '.md': '#555', '.yml': '#cb171e', '.yaml': '#cb171e' };
+const langNames = { '.ts': 'TypeScript', '.tsx': 'TSX', '.js': 'JavaScript', '.jsx': 'JSX', '.mjs': 'JavaScript', '.go': 'Go', '.css': 'CSS', '.scss': 'SCSS', '.html': 'HTML', '.json': 'JSON', '.md': 'Markdown', '.yml': 'YAML', '.yaml': 'YAML' };
+document.getElementById('lang-bar').innerHTML = langs.map(([ext, lines]) => {
+  const pct = (lines / totalLines * 100).toFixed(1);
+  const col = langColors[ext] || '#8b949e';
+  return '<span style="width:' + pct + '%;background:' + col + '" title="' + (langNames[ext] || ext) + ' ' + pct + '%"></span>';
+}).join('');
+document.getElementById('lang-legend').innerHTML = langs.map(([ext, lines]) => {
+  const pct = (lines / totalLines * 100).toFixed(0);
+  const col = langColors[ext] || '#8b949e';
+  return '<span style="color:' + col + '">' + (langNames[ext] || ext) + ' ' + pct + '%</span>';
+}).join('');
+// Top 5 most imported
+const freq = {};
+allNames.forEach(n => freq[n] = (freq[n] || 0) + 1);
+const top5 = Object.entries(freq).sort((a, b) => b[1] - a[1]).slice(0, 5);
+document.getElementById('top-imports').innerHTML = top5.map(([name, count]) =>
+  '<li title="' + name + '"><span>' + name + '</span><span class="ti-count">' + count + '</span></li>'
+).join('');
+// Category breakdown bar
+const total = allNames.length || 1;
+const catColors = { stdlib: 'var(--green)', internal: 'var(--purple)', private: 'var(--blue)', external: 'var(--orange)' };
+document.getElementById('cat-bar').innerHTML = ['stdlib','internal','private','external'].map(c => {
+  const pct = (catCounts[c] / total * 100).toFixed(1);
+  return '<span style="width:' + pct + '%;background:' + catColors[c] + '"></span>';
+}).join('');
+document.getElementById('cat-bar-legend').innerHTML = ['stdlib','internal','private','external'].map(c => {
+  const pct = (catCounts[c] / total * 100).toFixed(0);
+  return '<span style="color:' + catColors[c] + '">' + c + ' ' + pct + '%</span>';
+}).join('');
+// God files (10+ imports)
+const godFiles = data.filter(f => f.imports.length >= 10).sort((a, b) => b.imports.length - a.imports.length).slice(0, 5);
+const gfEl = document.getElementById('god-files');
+const gfSection = document.getElementById('god-files-section');
+if (godFiles.length) {
+  gfEl.innerHTML = godFiles.map(f =>
+    '<li title="' + f.file + '"><span>' + f.file + '</span><span class="ti-count">' + f.imports.length + '</span></li>'
+  ).join('');
+} else { gfSection.style.display = 'none'; gfEl.style.display = 'none'; }
+document.getElementById('root-path').textContent = root;
+
+// State
+const active = new Set(['stdlib', 'internal', 'private', 'external']);
+let selectedImport = null;
+const collapsedFiles = new Set();
+
+// URL hash state
+function readHash() {
+  const p = new URLSearchParams(location.hash.slice(1));
+  if (p.has('q')) searchInput.value = p.get('q');
+  if (p.has('view')) {
+    document.querySelectorAll('.view-btn').forEach(b => b.classList.toggle('active', b.dataset.view === p.get('view')));
+  }
+  if (p.has('sort')) document.getElementById('sort').value = p.get('sort');
+  if (p.has('cats')) {
+    const cats = new Set(p.get('cats').split(','));
+    active.clear();
+    cats.forEach(c => active.add(c));
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.toggle('active', active.has(b.dataset.cat)));
+  }
+  if (p.has('rev')) {
+    const rev = p.get('rev');
+    if (reverseIndex[rev]) showReverse(rev);
+  }
+}
+function writeHash() {
+  const p = new URLSearchParams();
+  const q = searchInput.value;
+  if (q) p.set('q', q);
+  const view = document.querySelector('.view-btn.active').dataset.view;
+  if (view !== 'both') p.set('view', view);
+  const sort = document.getElementById('sort').value;
+  if (sort !== 'name-asc') p.set('sort', sort);
+  const cats = [...active].sort().join(',');
+  if (cats !== 'external,internal,private,stdlib') p.set('cats', cats);
+  if (selectedImport) p.set('rev', selectedImport);
+  const h = p.toString();
+  history.replaceState(null, '', h ? '#' + h : location.pathname);
+}
+
+// Filter buttons
+document.querySelectorAll('.filter-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const cat = btn.dataset.cat;
+    btn.classList.toggle('active');
+    active.has(cat) ? active.delete(cat) : active.add(cat);
+    render();
+  });
+});
+
+// Sort
+document.getElementById('sort').addEventListener('change', render);
+document.querySelectorAll('.view-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.view-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    render();
+  });
+});
+
+// Search
+const searchInput = document.getElementById('search');
+let debounceTimer;
+searchInput.addEventListener('input', () => {
+  clearTimeout(debounceTimer);
+  debounceTimer = setTimeout(() => { selectedImport = null; render(); }, 150);
+});
+
+// Reverse panel close
+document.getElementById('reverse-close').addEventListener('click', () => {
+  selectedImport = null;
+  document.getElementById('code-panel').classList.remove('visible');
+  render();
+});
+
+function showReverse(importName) {
+  selectedImport = importName;
+  const panel = document.getElementById('reverse-panel');
+  const files = reverseIndex[importName] || [];
+  document.getElementById('reverse-title').textContent = importName;
+  document.getElementById('reverse-count').textContent = files.length + ' file' + (files.length !== 1 ? 's' : '') + ' use this import';
+  const list = document.getElementById('reverse-list');
+  list.innerHTML = files.map(f =>
+    '<li><a href="vscode://file/' + root + '/' + f + '">' + f + '</a></li>'
+  ).join('');
+  panel.classList.add('visible');
+  render();
+}
+
+function escHtml(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function highlightSyntax(code) {
+  const kw = /\b(import|export|from|as|const|let|var|require|type|default|await)\b/g;
+  const str = /(["'`])(?:[^"'`\\]|\\.)*?\1/g;
+  const punct = /[{}(),;*]/g;
+  const token = new RegExp('(' + kw.source + ')|(' + str.source + ')|(' + punct.source + ')', 'g');
+  return code.replace(token, (m, kwM, _, strM, punctM) => {
+    if (kwM) return '<span class="kw">' + escHtml(kwM) + '</span>';
+    if (strM) return '<span class="str">' + escHtml(strM) + '</span>';
+    if (punctM) return '<span class="punct">' + escHtml(punctM) + '</span>';
+    return escHtml(m);
+  });
+}
+
+// Build snippet lookup: "file::importName" → {snippet, kind, line}
+const snippetIndex = {};
+data.forEach(f => f.imports.forEach(i => {
+  if (i.snippet) snippetIndex[f.file + '::' + i.name] = { snippet: i.snippet, kind: i.kind, line: i.line };
+}));
+
+function showCode(file, importName, clickEvent) {
+  const panel = document.getElementById('code-panel');
+  const entry = snippetIndex[file + '::' + importName];
+  if (!entry || !entry.snippet) { panel.classList.remove('visible'); return; }
+  document.getElementById('code-title').textContent = importName;
+  document.getElementById('code-kind').textContent = entry.kind || '';
+  document.getElementById('code-body').innerHTML = highlightSyntax(entry.snippet);
+  const link = document.getElementById('code-link');
+  const lineRef = entry.line ? ':' + entry.line : '';
+  link.href = 'vscode://file/' + root + '/' + file + lineRef;
+  link.textContent = file + (entry.line ? ':' + entry.line : '');
+  const usages = document.getElementById('code-usages');
+  const files = reverseIndex[importName] || [];
+  if (files.length > 0) {
+    usages.textContent = files.length + ' file' + (files.length !== 1 ? 's' : '') + ' use this import';
+    usages.onclick = () => showReverse(importName);
+    usages.style.display = '';
+  } else {
+    usages.style.display = 'none';
+  }
+  // Position near click
+  if (clickEvent) {
+    const x = Math.min(clickEvent.clientX, window.innerWidth - 500);
+    const y = Math.min(clickEvent.clientY + 10, window.innerHeight - 300);
+    panel.style.left = Math.max(0, x) + 'px';
+    panel.style.top = Math.max(0, y) + 'px';
+  }
+  panel.classList.add('visible');
+}
+
+document.getElementById('code-close').addEventListener('click', () => {
+  document.getElementById('code-panel').classList.remove('visible');
+});
+
+// Copy snippet to clipboard
+document.getElementById('code-copy').addEventListener('click', () => {
+  const code = document.getElementById('code-body').textContent;
+  navigator.clipboard.writeText(code).then(() => {
+    const btn = document.getElementById('code-copy');
+    btn.textContent = '✓';
+    setTimeout(() => btn.textContent = '⎘', 1500);
+  });
+});
+
+// Keyboard shortcuts
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') {
+    document.getElementById('code-panel').classList.remove('visible');
+    document.getElementById('reverse-panel').classList.remove('visible');
+    selectedImport = null;
+    render();
+  }
+  if (e.key === '/' && document.activeElement !== searchInput) {
+    e.preventDefault();
+    searchInput.focus();
+  }
+});
+
+// File icon map (Devicon classes)
+const nameIcons = [
+  [/vite\.config/, 'devicon-vitejs-plain'],
+  [/tailwind\.config/, 'devicon-tailwindcss-original'],
+  [/jest\.config|jest\.setup/, 'devicon-jest-plain'],
+  [/webpack\.config/, 'devicon-webpack-plain'],
+  [/babel\.config|\.babelrc/, 'devicon-babel-plain'],
+  [/\.eslintrc|eslint\.config/, 'devicon-eslint-original'],
+  [/next\.config/, 'devicon-nextjs-plain'],
+  [/nuxt\.config/, 'devicon-nuxtjs-plain'],
+  [/Dockerfile|\.dockerignore/, 'devicon-docker-plain'],
+  [/\.github/, 'devicon-github-original'],
+  [/package\.json/, 'devicon-npm-original-wordmark'],
+];
+const extIcons = {
+  '.tsx': 'devicon-react-original', '.jsx': 'devicon-react-original',
+  '.ts': 'devicon-typescript-plain', '.js': 'devicon-javascript-plain', '.mjs': 'devicon-javascript-plain',
+  '.go': 'devicon-go-original-wordmark',
+  '.css': 'devicon-css3-plain', '.scss': 'devicon-sass-original',
+  '.json': 'devicon-json-plain', '.md': 'devicon-markdown-original',
+  '.html': 'devicon-html5-plain', '.yml': 'devicon-yaml-plain', '.yaml': 'devicon-yaml-plain',
+};
+function fileIcon(path) {
+  const name = path.substring(path.lastIndexOf('/') + 1);
+  for (const [re, cls] of nameIcons) { if (re.test(name)) return '<i class="' + cls + ' colored"></i>'; }
+  const ext = name.substring(name.lastIndexOf('.'));
+  const cls = extIcons[ext];
+  return cls ? '<i class="' + cls + ' colored"></i>' : '📄';
+}
+
+function sortData(items) {
+  const mode = document.getElementById('sort').value;
+  const sorted = [...items];
+  switch (mode) {
+    case 'name-asc': return sorted.sort((a, b) => a.file.localeCompare(b.file));
+    case 'name-desc': return sorted.sort((a, b) => b.file.localeCompare(a.file));
+    case 'imports-desc': return sorted.sort((a, b) => b.imports.length - a.imports.length);
+    case 'imports-asc': return sorted.sort((a, b) => a.imports.length - b.imports.length);
+    case 'depended-desc': return sorted.sort((a, b) => (dependedOn[b.file] || 0) - (dependedOn[a.file] || 0));
+    default: return sorted;
+  }
+}
+
+function render() {
+  const q = searchInput.value.toLowerCase();
+  const viewMode = document.querySelector('.view-btn.active').dataset.view;
+  const grid = document.getElementById('grid');
+  grid.innerHTML = '';
+  let shown = 0;
+
+  // If reverse lookup active and no search, filter to files using that import
+  const reverseFiles = selectedImport ? new Set(reverseIndex[selectedImport] || []) : null;
+
+  const sorted = sortData(data);
+
+  sorted.forEach(f => {
+    const visibleImports = f.imports.filter(i => active.has(i.category));
+    const exports = f.exports || [];
+    const showImports = viewMode !== 'exports';
+    const showExports = viewMode !== 'imports';
+
+    const hasContent = (showImports && visibleImports.length > 0) || (showExports && exports.length > 0);
+    if (!hasContent) return;
+
+    if (reverseFiles && !reverseFiles.has(f.file)) return;
+
+    const fileMatch = f.file.toLowerCase().includes(q);
+    const importMatch = visibleImports.some(i => i.name.toLowerCase().includes(q));
+    const exportMatch = exports.some(e => e.name.toLowerCase().includes(q));
+    if (q && !fileMatch && !importMatch && !exportMatch) return;
+
+    const card = document.createElement('div');
+    const isHighlighted = reverseFiles && reverseFiles.has(f.file);
+    card.className = 'card' + (isHighlighted ? ' highlighted' : '');
+    card.dataset.file = f.file;
+
+    const tags = visibleImports.map(i => {
+      const isSelected = selectedImport === i.name;
+      const highlight = q && i.name.toLowerCase().includes(q);
+      let cls = 'tag tag-' + i.category;
+      if (isSelected) cls += ' selected';
+      let style = highlight ? ' style="outline:1px solid var(--accent)"' : '';
+
+      let detail = '';
+      if (i.kind) {
+        let lines = '<span class="detail-kind">' + i.kind + '</span>';
+        if (i.alias) lines += '<div class="detail-names">as ' + i.alias + '</div>';
+        if (i.names && i.names.length) lines += '<div class="detail-names">{ ' + i.names.join(', ') + ' }</div>';
+        detail = '<span class="tag-detail">' + lines + '</span>';
+      }
+
+      return '<span class="' + cls + '"' + style + ' data-import="' + i.name + '" data-kind="' + (i.kind || '') + '">' + i.name + detail + '</span>';
+    }).join('');
+
+    const exportTags = exports.map(e => {
+      const highlight = q && e.name.toLowerCase().includes(q);
+      let cls = 'etag';
+      if (e.private) cls += ' private';
+      let style = highlight ? ' style="outline:1px solid var(--accent)"' : '';
+      const lineAttr = e.line ? ' data-line="' + e.line + '"' : '';
+      const tooltip = e.line ? '<span class="etag-detail">line ' + e.line + '</span>' : '';
+      return '<span class="' + cls + '"' + style + ' data-file="' + f.file + '"' + lineAttr + '>' + e.name + '<span class="ekind">' + e.kind + '</span>' + tooltip + '</span>';
+    }).join('');
+
+    const count = (showImports ? visibleImports.length : 0) + (showExports ? exports.length : 0);
+
+    var sections = '';
+    if (showImports) {
+      const content = tags || '<span class="section-empty">no imports</span>';
+      sections += '<div class="card-section"><div class="card-section-label">Imports (' + visibleImports.length + ')</div><div class="tags">' + content + '</div></div>';
+    }
+    if (showExports) {
+      const content = exportTags || '<span class="section-empty">no exports</span>';
+      sections += '<div class="card-section"><div class="card-section-label">Exports (' + exports.length + ')</div><div class="export-row">' + content + '</div></div>';
+    }
+
+    card.innerHTML =
+      '<div class="card-header">' +
+        '<div class="file-info">' +
+          '<span class="file-icon">' + fileIcon(f.file) + '</span>' +
+          '<a href="vscode://file/' + root + '/' + f.file + '">' + f.file + '</a>' +
+        '</div>' +
+        '<div class="header-right">' +
+          '<span class="import-count">' + count + '</span>' +
+          '<button class="collapse-btn" title="Collapse">▾</button>' +
+        '</div>' +
+      '</div>' + sections;
+
+    if (collapsedFiles.has(f.file)) card.classList.add('collapsed');
+
+    grid.appendChild(card);
+    shown++;
+  });
+
+  // Update reverse panel visibility
+  const panel = document.getElementById('reverse-panel');
+  if (!selectedImport) panel.classList.remove('visible');
+
+  document.getElementById('result-count').textContent = shown + ' of ' + data.length + ' files';
+  document.getElementById('no-results').style.display = shown === 0 ? 'block' : 'none';
+  writeHash();
+}
+
+// Event delegation on grid
+grid.addEventListener('click', e => {
+  const tag = e.target.closest('.tag');
+  if (tag) {
+    const card = tag.closest('.card');
+    showCode(card.dataset.file, tag.dataset.import, e);
+    return;
+  }
+  const etag = e.target.closest('.etag');
+  if (etag) {
+    const lineRef = etag.dataset.line ? ':' + etag.dataset.line : '';
+    window.open('vscode://file/' + root + '/' + etag.dataset.file + lineRef, '_self');
+    return;
+  }
+  const header = e.target.closest('.card-header');
+  if (header && !e.target.closest('a')) {
+    const card = header.closest('.card');
+    card.classList.toggle('collapsed');
+    const file = card.dataset.file;
+    if (card.classList.contains('collapsed')) { collapsedFiles.add(file); } else { collapsedFiles.delete(file); }
+  }
+});
+
+readHash();
+render();
+
+// Mobile sidebar toggle
+const menuToggle = document.getElementById('menu-toggle');
+const sidebar = document.getElementById('sidebar');
+const overlay = document.getElementById('sidebar-overlay');
+function toggleSidebar() {
+  sidebar.classList.toggle('open');
+  overlay.classList.toggle('visible');
+}
+menuToggle.addEventListener('click', toggleSidebar);
+overlay.addEventListener('click', toggleSidebar);
+
+// Theme toggle
+const themeBtn = document.getElementById('theme-toggle');
+function applyTheme(theme) {
+  document.documentElement.setAttribute('data-theme', theme);
+  themeBtn.textContent = theme === 'light' ? '☾' : '☀';
+  localStorage.setItem('depviz-theme', theme);
+}
+themeBtn.addEventListener('click', () => {
+  applyTheme(document.documentElement.getAttribute('data-theme') === 'light' ? 'dark' : 'light');
+});
+const saved = localStorage.getItem('depviz-theme');
+if (saved) applyTheme(saved);
+
+		</script>
+	</body>
+</html>
