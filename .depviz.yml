@@ -1,0 +1,13 @@
+# .depviz.yml
+language: multi
+exclude:
+  - vendor
+  - .git
+  - bin
+  - .depviz
+  - node_modules
+classify:
+  internal:
+    - "^github\\.com/jtoloui/depviz/.*"
+  private:
+    - "^github\\.com/jtoloui/.*"

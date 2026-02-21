@@ -26,7 +26,7 @@ func DefaultFor(lang, root string) (*Config, error) {
 func defaultJS() *Config {
 	return &Config{
 		Language: "js",
-		Exclude:  []string{"node_modules", ".git", "dist", "build", ".next", "coverage"},
+		Exclude:  []string{"node_modules", ".git", "dist", "build", ".next", "coverage", ".depviz"},
 		Classify: ClassifyRules{
 			Internal: []string{`^\.\.?/.*`},
 		},
@@ -41,7 +41,7 @@ func defaultGo(root string) (*Config, error) {
 
 	return &Config{
 		Language: "go",
-		Exclude:  []string{"vendor", ".git"},
+		Exclude:  []string{"vendor", ".git", ".depviz"},
 		Classify: ClassifyRules{
 			Internal: []string{`^` + regexpEscape(mod) + `/.*`},
 		},
