@@ -33,4 +33,5 @@ build: lint
 clean:
 	rm -rf bin/ coverage.out coverage.html
 
-ci: tidy fmt vet test coverage build
+ci: tidy fmt vet test coverage
+	go build $(LDFLAGS) -o bin/depviz .
