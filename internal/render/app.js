@@ -79,7 +79,14 @@ if (godFiles.length) {
     '<li title="' + f.file + '"><span>' + f.file + '</span><span class="ti-count">' + f.imports.length + '</span></li>'
   ).join('');
 } else { gfSection.style.display = 'none'; gfEl.style.display = 'none'; }
-document.getElementById('root-path').textContent = root;
+const rootEl = document.getElementById('root-path');
+rootEl.textContent = root;
+const vsBtn = document.createElement('a');
+vsBtn.href = 'vscode://file/' + root;
+vsBtn.title = 'Open project in VS Code (new window)';
+vsBtn.className = 'vscode-open-btn';
+vsBtn.innerHTML = '<i class="devicon-vscode-plain"></i> Open in VS Code';
+rootEl.parentElement.querySelector('div').prepend(vsBtn);
 
 // State
 const active = new Set(['stdlib', 'internal', 'private', 'external']);

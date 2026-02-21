@@ -124,9 +124,12 @@
 		</div>
 
 		<main class="main">
+			<div class="sticky-top">
 			<div class="main-header">
 				<h2 id="root-path"></h2>
-				<span class="result-count" id="result-count"></span>
+				<div style="display:flex;align-items:center;gap:0.75rem">
+					<span class="result-count" id="result-count"></span>
+				</div>
 			</div>
 			<div class="toolbar">
 				<div class="toolbar-group">
@@ -168,6 +171,7 @@
 						<option value="depended-desc">Most depended on</option>
 					</select>
 				</div>
+			</div>
 			</div>
 			<div class="grid" id="grid"></div>
 			<div class="no-results" id="no-results" style="display: none">

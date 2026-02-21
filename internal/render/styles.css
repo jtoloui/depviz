@@ -265,12 +265,16 @@
 
   /* Main content */
   .main { flex: 1; overflow-y: auto; padding: 1.5rem; }
-  .main-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem; }
+  .main-header { display: flex; justify-content: space-between; align-items: center; padding: 0.5rem 0; flex-wrap: wrap; gap: 0.5rem; }
   .main-header h2 { font-size: 0.85rem; color: var(--text-muted); font-weight: 400; }
   .result-count { font-size: 0.8rem; color: var(--text-muted); }
+  .vscode-open-btn { display: inline-flex; align-items: center; gap: 0.4em; padding: 0.35em 0.75em; font-size: 0.78rem; color: var(--text); background: var(--surface); border: 1px solid var(--border); border-radius: 6px; text-decoration: none; cursor: pointer; transition: background 0.15s, border-color 0.15s; }
+  .vscode-open-btn:hover { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .vscode-open-btn i { font-size: 1em; }
 
   /* Toolbar */
-  .toolbar { position: sticky; top: 0; z-index: 10; background: var(--bg); display: flex; align-items: flex-end; gap: 1.25rem; padding: 0.5rem 0; margin-bottom: 0.75rem; border-bottom: 1px solid var(--border); flex-wrap: wrap; }
+  .sticky-top { position: sticky; top: 0; z-index: 10; background: var(--bg); border-bottom: 1px solid var(--border); margin-bottom: 0.75rem; }
+  .toolbar { display: flex; align-items: flex-end; gap: 1.25rem; padding: 0.5rem 0; flex-wrap: wrap; }
   .toolbar-group { display: flex; flex-direction: column; gap: 0.3rem; }
   .toolbar-label { font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); }
   .toolbar select { padding: 0.35rem 0.5rem; background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius); color: var(--text); font-size: 0.75rem; outline: none; }
