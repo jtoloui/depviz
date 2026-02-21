@@ -11,3 +11,33 @@ coverage:
 ignore:
   - "main.go"
   - "cmd/**"
+
+comment:
+  layout: "header, diff, flags, components"
+
+component_management:
+  default_rules:
+    statuses:
+      - type: project
+        target: auto
+  individual_components:
+    - component_id: scanner
+      name: Scanner
+      paths:
+        - internal/scanner/**
+    - component_id: classify
+      name: Classifier
+      paths:
+        - internal/classify/**
+    - component_id: render
+      name: Render
+      paths:
+        - internal/render/**
+    - component_id: config
+      name: Config
+      paths:
+        - internal/config/**
+    - component_id: cli
+      name: CLI Output
+      paths:
+        - internal/cli/**
