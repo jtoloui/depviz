@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"html/template"
 	"io"
+	"sort"
 
 	"github.com/jtoloui/depviz/internal/classify"
 	"github.com/jtoloui/depviz/internal/config"
@@ -55,6 +56,7 @@ type templateData struct {
 
 // HTML writes a dependency visualisation to w.
 func HTML(w io.Writer, root string, results []scanner.FileImports, cl *classify.Classifier) error {
+	sort.Slice(results, func(i, j int) bool { return results[i].File < results[j].File })
 	files := make([]fileData, len(results))
 	for i, r := range results {
 		imps := make([]classifiedImport, len(r.Imports))
