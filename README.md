@@ -164,6 +164,33 @@ depviz --version
 # depviz version v1.0.0
 ```
 
+### Shell Completion
+
+**Zsh (Oh My Zsh):**
+```bash
+depviz completion zsh > ~/.oh-my-zsh/completions/_depviz
+rm -f ~/.zcompdump*
+exec zsh
+```
+
+**Zsh (standard):**
+```bash
+depviz completion zsh > /usr/local/share/zsh/site-functions/_depviz
+rm -f ~/.zcompdump*
+exec zsh
+```
+
+**Bash:**
+```bash
+depviz completion bash > /etc/bash_completion.d/depviz
+source ~/.bashrc
+```
+
+**Fish:**
+```bash
+depviz completion fish > ~/.config/fish/completions/depviz.fish
+```
+
 ---
 
 ## Configuration
