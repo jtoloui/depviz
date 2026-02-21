@@ -49,3 +49,10 @@ func ServeResult(results []scanner.FileImports, port int) {
 	fmt.Printf("  %s%s✓ Scan complete%s — %d files\n", bold, green, reset, len(results))
 	fmt.Printf("\n  %s%s→%s http://localhost:%d\n\n", bold, green, reset, port)
 }
+
+// InitResult prints a coloured summary after generating config.
+func InitResult(lang, path string) {
+	fmt.Printf("  %s%s✓ Config created%s\n", bold, green, reset)
+	fmt.Printf("  %s%sLanguage%s  %s\n", dim, cyan, reset, lang)
+	fmt.Printf("\n  %s→%s %s\n\n", green, reset, path)
+}

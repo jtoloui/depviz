@@ -4,11 +4,14 @@
 dep-visualiser/
 ├── cmd/
 │   ├── root.go              ← Cobra root command, slog setup, -l/-v flags
+│   ├── init.go              ← depviz init — interactive config generator (huh forms)
 │   ├── scan.go              ← depviz scan — config load, scan, render to file
-│   └── serve.go             ← depviz serve — HTTP server, graceful shutdown, auto port
+│   ├── serve.go             ← depviz serve — HTTP server, graceful shutdown, auto port
+│   └── stats.go             ← depviz stats — config load, scan, print terminal stats
 ├── internal/
 │   ├── cli/
-│   │   └── output.go        ← ASCII banner (go-figure) + coloured scan/serve result printing
+│   │   ├── output.go        ← ASCII banner (go-figure) + coloured scan/serve/init result printing
+│   │   └── stats.go         ← Coloured stats dashboard (bars, categories, hotspots)
 │   ├── classify/
 │   │   ├── classifier.go    ← Classifier struct, pre-compiled regex, stdlib detection (Go + Node.js builtins)
 │   │   └── classifier_test.go
@@ -48,7 +51,7 @@ dep-visualiser/
 ## Package Responsibilities
 
 - `cmd` — CLI orchestration only. Loads config, creates scanner + classifier, calls render. No business logic.
-- `internal/cli` — ASCII banner and coloured terminal output for scan/serve results.
+- `internal/cli` — ASCII banner, coloured terminal output for scan/serve/init results, and stats dashboard.
 - `internal/scanner` — Knows how to walk directories and extract imports + exports + line counts. Language-specific parsers behind a shared Scanner interface. Concurrent via walk.go. JS/TS uses tree-sitter for AST-based parsing; Go uses go/ast.
 - `internal/classify` — Knows how to categorise an import string. Owns stdlib lists (Go: no-dot heuristic, JS: comprehensive Node.js builtins map with subpath imports) and regex matching. Depends on config for patterns.
 - `internal/config` — Knows how to read .depviz.yml and provide defaults. Pure data + validation. No behaviour beyond loading.

@@ -74,6 +74,15 @@ Help developers understand and explore the dependency landscape of their codebas
 - Sticky toolbar: categories, view, sort controls moved to main content area header
 - Inline SVG favicon (no external files)
 
+## Current Features (CLI ✅)
+
+- ASCII art banner with purple theme
+- Coloured terminal output for scan/serve/init results
+- `depviz init` — interactive config generator with auto-detected language
+- `depviz stats` — terminal stats dashboard: file/import/export/line counts, language bars, category bars, top 5 imports, coupling hotspots
+- Error handling: single error line + "Run 'depviz <command> -h'" hint
+- SilenceUsage + SilenceErrors on root command
+
 ## What devs use it for today
 
 - Onboarding — "show me the dependency landscape of this codebase"

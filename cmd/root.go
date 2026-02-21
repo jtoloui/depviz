@@ -9,8 +9,10 @@ import (
 )
 
 var rootCmd = &cobra.Command{
-	Use:   "depviz",
-	Short: "Visualise Go and JS/TS project dependencies",
+	Use:           "depviz",
+	Short:         "Visualise Go and JS/TS project dependencies",
+	SilenceUsage:  true,
+	SilenceErrors: true,
 	PersistentPreRun: func(cmd *cobra.Command, args []string) {
 		var level slog.Level
 		if verbose {
@@ -34,7 +36,7 @@ func init() {
 
 func Execute() {
 	if err := rootCmd.Execute(); err != nil {
-		fmt.Fprintln(os.Stderr, err)
+		fmt.Fprintf(os.Stderr, "Error: %s\nRun 'depviz <command> -h' for help.\n", err)
 		os.Exit(1)
 	}
 }

@@ -46,3 +46,28 @@
 - `internal/render/app.js` — file tree, theme selector, reverse hash state, readHash reorder
 - `internal/render/html_test.go` — updated for Lang field, doctype case, theme-select
 - `cmd/scan.go` — added `"multi"` case to `getScanner`
+
+## CLI Polish (2026-02-21)
+
+### Added
+- ASCII art banner (go-figure, purple "small" font) shown on scan/serve
+- Coloured terminal output: `cli.ScanResult`, `cli.ServeResult`, `cli.InitResult`
+- `depviz init` — interactive config generator using charmbracelet/huh forms
+- `depviz stats` — terminal stats dashboard: summary, language bars, category bars, top 5 imports, coupling hotspots (8+ imports)
+- SilenceUsage + SilenceErrors on root command, single error line + hint
+- CI/CD: GitHub Actions CI + Release, GoReleaser (macOS-only), Homebrew tap
+- `.depviz.yml` config for scanning the depviz codebase itself
+
+### Files Changed
+- `cmd/init.go` (new) — interactive huh form, detectLang, splitCSV
+- `cmd/stats.go` (new) — scan pipeline → cli.Stats
+- `internal/cli/output.go` (new) — Banner, ScanResult, ServeResult, InitResult
+- `internal/cli/stats.go` (new) — Stats dashboard with coloured bars
+- `cmd/root.go` — SilenceUsage, SilenceErrors, improved Execute()
+- `cmd/scan.go` — Banner + ScanResult calls
+- `cmd/serve.go` — Banner + ServeResult calls
+- `internal/config/defaults.go` — `.depviz` in all default exclude lists
+- `.github/workflows/ci.yml` (new)
+- `.github/workflows/release.yml` (new)
+- `.goreleaser.yml` (new)
+- `.depviz.yml` (new)

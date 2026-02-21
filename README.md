@@ -132,6 +132,31 @@ depviz serve ./my-go-api
 depviz serve -l js -p 8080 ./my-react-app
 ```
 
+### `depviz init`
+
+Interactively generate a `.depviz.yml` config file. Auto-detects language from `go.mod` / `package.json`.
+
+```bash
+depviz init
+depviz init ./my-project
+```
+
+### `depviz stats`
+
+Print a dependency stats dashboard in the terminal — no HTML output.
+
+```bash
+depviz stats ./my-project
+depviz stats -l multi .
+```
+
+| Flag | Short | Default | Description |
+|------|-------|---------|-------------|
+| `--lang` | `-l` | `go` | Language: `go`, `js`, or `multi` |
+| `--verbose` | `-v` | `false` | Enable debug logging |
+
+Shows: file/import/export/line counts, language breakdown, category breakdown (stdlib/internal/private/external), top 5 most imported packages, and coupling hotspots (files with 8+ imports). Respects `.depviz.yml` if present.
+
 ### `depviz --version`
 
 ```bash
@@ -213,9 +238,14 @@ When no `.depviz.yml` exists:
 dep-visualiser/
 ├── cmd/
 │   ├── root.go              ← Cobra root command, slog setup
+│   ├── init.go              ← depviz init (interactive config generator)
 │   ├── scan.go              ← depviz scan
-│   └── serve.go             ← depviz serve (graceful shutdown)
+│   ├── serve.go             ← depviz serve (graceful shutdown)
+│   └── stats.go             ← depviz stats (terminal dashboard)
 ├── internal/
+│   ├── cli/
+│   │   ├── output.go        ← ASCII banner + coloured scan/serve/init output
+│   │   └── stats.go         ← Coloured stats dashboard (bars, hotspots)
 │   ├── classify/
 │   │   └── classifier.go    ← Import classification engine
 │   ├── config/

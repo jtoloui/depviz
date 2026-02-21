@@ -12,6 +12,7 @@
 - `github.com/tree-sitter/tree-sitter-typescript` — Tree-sitter TypeScript/TSX grammars (`.ts`, `.tsx`)
 - `github.com/mattn/go-pointer` — Indirect dep of go-tree-sitter (CGo pointer handling)
 - `github.com/common-nighthawk/go-figure` — ASCII art banner for CLI output
+- `github.com/charmbracelet/huh` — Interactive terminal forms for `depviz init`
 
 ## Tooling
 - golangci-lint v2.10.1 with errcheck enabled
