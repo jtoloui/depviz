@@ -13,6 +13,7 @@ import (
 	"time"
 
 	"github.com/jtoloui/depviz/internal/classify"
+	"github.com/jtoloui/depviz/internal/cli"
 	"github.com/jtoloui/depviz/internal/config"
 	"github.com/jtoloui/depviz/internal/render"
 	"github.com/spf13/cobra"
@@ -30,6 +31,8 @@ var serveCmd = &cobra.Command{
 	Short: "Scan a project and serve the dependency map in the browser",
 	Args:  cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
+		cli.Banner()
+
 		root, err := filepath.Abs(args[0])
 		if err != nil {
 			return err
@@ -56,7 +59,6 @@ var serveCmd = &cobra.Command{
 		if err != nil {
 			return fmt.Errorf("scanning: %w", err)
 		}
-		slog.Info("scan complete", "files", len(results))
 
 		mux := http.NewServeMux()
 		mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
@@ -93,8 +95,7 @@ var serveCmd = &cobra.Command{
 		}()
 
 		actualPort := ln.Addr().(*net.TCPAddr).Port
-		slog.Info("server started", "port", actualPort)
-		fmt.Printf("serving dependency map at http://localhost:%d\n", actualPort)
+		cli.ServeResult(results, actualPort)
 
 		if err := srv.Serve(ln); !errors.Is(err, http.ErrServerClosed) {
 			return err

@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 
 	"github.com/jtoloui/depviz/internal/classify"
+	"github.com/jtoloui/depviz/internal/cli"
 	"github.com/jtoloui/depviz/internal/config"
 	"github.com/jtoloui/depviz/internal/render"
 	"github.com/jtoloui/depviz/internal/scanner"
@@ -25,6 +26,8 @@ var scanCmd = &cobra.Command{
 	Short: "Scan a project and generate a dependency map",
 	Args:  cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
+		cli.Banner()
+
 		root, err := filepath.Abs(args[0])
 		if err != nil {
 			return err
@@ -51,7 +54,6 @@ var scanCmd = &cobra.Command{
 		if err != nil {
 			return fmt.Errorf("scanning: %w", err)
 		}
-		slog.Info("scan complete", "files", len(results))
 
 		out := resolveOutput(cfg, output, root)
 		if err := os.MkdirAll(filepath.Dir(out), 0o755); err != nil {
@@ -72,7 +74,7 @@ var scanCmd = &cobra.Command{
 			return fmt.Errorf("closing output: %w", err)
 		}
 
-		slog.Info("output written", "path", out)
+		cli.ScanResult(results, out)
 		return nil
 	},
 }

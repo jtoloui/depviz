@@ -3,6 +3,7 @@ module github.com/jtoloui/depviz
 go 1.25.0
 
 require (
+	github.com/common-nighthawk/go-figure v0.0.0-20210622060536-734e95fb86be
 	github.com/spf13/cobra v1.10.2
 	github.com/tree-sitter/go-tree-sitter v0.25.0
 	github.com/tree-sitter/tree-sitter-javascript v0.25.0
