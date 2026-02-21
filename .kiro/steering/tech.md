@@ -11,6 +11,7 @@
 - `github.com/tree-sitter/tree-sitter-javascript` — Tree-sitter JavaScript grammar (`.js`, `.jsx`, `.mjs`)
 - `github.com/tree-sitter/tree-sitter-typescript` — Tree-sitter TypeScript/TSX grammars (`.ts`, `.tsx`)
 - `github.com/mattn/go-pointer` — Indirect dep of go-tree-sitter (CGo pointer handling)
+- `github.com/common-nighthawk/go-figure` — ASCII art banner for CLI output
 
 ## Tooling
 - golangci-lint v2.10.1 with errcheck enabled
@@ -18,6 +19,13 @@
 - ldflags version injection from `git describe`
 - Race detector on all test runs (`go test -race`)
 - CGo required for tree-sitter (C compiler needed at build time, not at runtime)
+
+## CI/CD
+- GitHub Actions CI: `make` + `make coverage` + codecov upload + golangci-lint, concurrency cancels in-progress on PRs
+- GitHub Actions Release: GoReleaser on `v*` tags, macOS runner, Zig for cross-compilation
+- GoReleaser: CGo cross-compile — clang for darwin, zig cc for linux (musl static) + windows
+- Homebrew cask published to `jtoloui/homebrew-tap` via GoReleaser
+- Badges: CI status, codecov coverage, latest release
 
 ## Key Stdlib Packages Used
 - `go/ast` + `go/parser` — Go source parsing (full AST for imports + exported declarations)

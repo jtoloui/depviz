@@ -7,6 +7,8 @@ dep-visualiser/
 │   ├── scan.go              ← depviz scan — config load, scan, render to file
 │   └── serve.go             ← depviz serve — HTTP server, graceful shutdown, auto port
 ├── internal/
+│   ├── cli/
+│   │   └── output.go        ← ASCII banner (go-figure) + coloured scan/serve result printing
 │   ├── classify/
 │   │   ├── classifier.go    ← Classifier struct, pre-compiled regex, stdlib detection (Go + Node.js builtins)
 │   │   └── classifier_test.go
@@ -31,6 +33,12 @@ dep-visualiser/
 ├── e2e_test.go              ← End-to-end tests: full pipeline for Go and JS fixture projects
 ├── main.go                  ← Entry point, version injection via SetVersion
 ├── Makefile                 ← tidy → fmt → vet → test → lint → build; coverage target
+├── .goreleaser.yml          ← GoReleaser config: CGo cross-compile, Homebrew cask
+├── .github/
+│   └── workflows/
+│       ├── ci.yml           ← CI: make, coverage, codecov, golangci-lint
+│       └── release.yml      ← Release: GoReleaser on v* tags
+├── .depviz.yml              ← depviz config for scanning itself
 ├── .gitignore
 ├── README.md
 ├── go.mod
@@ -40,6 +48,7 @@ dep-visualiser/
 ## Package Responsibilities
 
 - `cmd` — CLI orchestration only. Loads config, creates scanner + classifier, calls render. No business logic.
+- `internal/cli` — ASCII banner and coloured terminal output for scan/serve results.
 - `internal/scanner` — Knows how to walk directories and extract imports + exports + line counts. Language-specific parsers behind a shared Scanner interface. Concurrent via walk.go. JS/TS uses tree-sitter for AST-based parsing; Go uses go/ast.
 - `internal/classify` — Knows how to categorise an import string. Owns stdlib lists (Go: no-dot heuristic, JS: comprehensive Node.js builtins map with subpath imports) and regex matching. Depends on config for patterns.
 - `internal/config` — Knows how to read .depviz.yml and provide defaults. Pure data + validation. No behaviour beyond loading.

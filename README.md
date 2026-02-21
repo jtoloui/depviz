@@ -5,6 +5,9 @@
 </p>
 
 <p align="center">
+  <a href="https://github.com/jtoloui/depviz/actions/workflows/ci.yml"><img src="https://img.shields.io/github/actions/workflow/status/jtoloui/depviz/ci.yml?branch=main&style=flat-square&label=CI" alt="CI" /></a>
+  <a href="https://codecov.io/gh/jtoloui/depviz"><img src="https://img.shields.io/codecov/c/github/jtoloui/depviz?style=flat-square" alt="Coverage" /></a>
+  <a href="https://github.com/jtoloui/depviz/releases/latest"><img src="https://img.shields.io/github/v/release/jtoloui/depviz?style=flat-square" alt="Release" /></a>
   <img src="https://img.shields.io/badge/go-1.25-00ADD8?style=flat-square&logo=go" alt="Go 1.25" />
   <img src="https://img.shields.io/badge/license-MIT-blue?style=flat-square" alt="MIT License" />
 </p>
@@ -45,6 +48,18 @@ depviz is a CLI tool that scans your Go or JavaScript/TypeScript project, extrac
 ---
 
 ## Installation
+
+### Homebrew (macOS)
+
+```bash
+brew install jtoloui/tap/depviz
+```
+
+### Download binary
+
+Grab the latest release from [GitHub Releases](https://github.com/jtoloui/depviz/releases/latest) — pre-built binaries for macOS, Linux, and Windows (amd64/arm64).
+
+### From source
 
 ```bash
 git clone https://github.com/jtoloui/depviz.git

@@ -136,8 +136,8 @@ Help developers understand and explore the dependency landscape of their codebas
 - Diff highlighting between successive scans
 - Breadcrumb trail in code panel for navigation history
 - Batch select — shift-click multiple imports to find intersection
-- Move to own repo (`github.com/jtoloui/depviz`), set up goreleaser + GitHub Actions for releases
-- Homebrew tap for macOS distribution
+- Move to own repo (`github.com/jtoloui/depviz`) ✅
+- Homebrew tap for macOS distribution ✅
 - Benchmarks — `testing.B` for scanner performance at 500/2000/5000 files, track regressions
 - Export as SVG/PNG for docs
 - Watch mode — `depviz serve --watch` auto-refresh on file changes
