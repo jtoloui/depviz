@@ -1,7 +1,7 @@
 VERSION ?= $(shell git describe --tags --always --dirty 2>/dev/null || echo dev)
 LDFLAGS := -ldflags "-X main.version=$(VERSION)"
 
-.PHONY: tidy fmt vet test coverage lint build clean
+.PHONY: tidy fmt vet test coverage lint build clean ci
 
 all: tidy fmt vet test lint build
 
@@ -32,3 +32,5 @@ build: lint
 
 clean:
 	rm -rf bin/ coverage.out coverage.html
+
+ci: tidy fmt vet test coverage build

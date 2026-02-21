@@ -1,4 +1,5 @@
 # yaml-language-server: $schema=https://goreleaser.com/static/schema.json
+version: 2
 project_name: depviz
 
 before:
@@ -13,35 +14,17 @@ builds:
       - -trimpath
     goos:
       - darwin
-      - linux
-      - windows
     goarch:
       - amd64
       - arm64
     env:
       - CGO_ENABLED=1
       - >-
-        {{- if eq .Os "darwin" }}
-          {{- if eq .Arch "amd64"}}CC=clang -arch x86_64{{- end }}
-          {{- if eq .Arch "arm64"}}CC=clang -arch arm64{{- end }}
-        {{- else if eq .Os "linux" }}
-          {{- if eq .Arch "amd64" }}CC=zig cc -target x86_64-linux-musl -lc{{- end }}
-          {{- if eq .Arch "arm64"}}CC=zig cc -target aarch64-linux-musl -lc{{- end }}
-        {{- else if eq .Os "windows" }}
-          {{- if eq .Arch "amd64" }}CC=zig cc -target x86_64-windows-gnu -lc{{- end }}
-          {{- if eq .Arch "arm64"}}CC=zig cc -target aarch64-windows-gnu -lc{{- end }}
-        {{- end }}
+        {{- if eq .Arch "amd64"}}CC=clang -arch x86_64{{- end }}
+        {{- if eq .Arch "arm64"}}CC=clang -arch arm64{{- end }}
       - >-
-        {{- if eq .Os "darwin" }}
-          {{- if eq .Arch "amd64"}}CXX=clang++ -arch x86_64{{- end }}
-          {{- if eq .Arch "arm64"}}CXX=clang++ -arch arm64{{- end }}
-        {{- else if eq .Os "linux" }}
-          {{- if eq .Arch "amd64" }}CXX=zig c++ -target x86_64-linux-musl -lc{{- end }}
-          {{- if eq .Arch "arm64"}}CXX=zig c++ -target aarch64-linux-musl -lc{{- end }}
-        {{- else if eq .Os "windows" }}
-          {{- if eq .Arch "amd64" }}CXX=zig c++ -target x86_64-windows-gnu -lc{{- end }}
-          {{- if eq .Arch "arm64"}}CXX=zig c++ -target aarch64-windows-gnu -lc{{- end }}
-        {{- end }}
+        {{- if eq .Arch "amd64"}}CXX=clang++ -arch x86_64{{- end }}
+        {{- if eq .Arch "arm64"}}CXX=clang++ -arch arm64{{- end }}
 
 archives:
   - formats:
@@ -52,10 +35,6 @@ archives:
       {{- if eq .Arch "amd64" }}x86_64
       {{- else if eq .Arch "arm64" }}arm64
       {{- else }}{{ .Arch }}{{ end }}
-    format_overrides:
-      - goos: windows
-        formats:
-          - zip
 
 checksum:
   name_template: "checksums.txt"
