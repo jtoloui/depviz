@@ -99,7 +99,9 @@ func (t *TreeSitterScanner) parseFile(root, path string, query *tree_sitter.Quer
 
 	parser := tree_sitter.NewParser()
 	defer parser.Close()
-	parser.SetLanguage(lang)
+	if err := parser.SetLanguage(lang); err != nil {
+		return nil, fmt.Errorf("set language for %s: %w", path, err)
+	}
 
 	tree := parser.Parse(src, nil)
 	defer tree.Close()
