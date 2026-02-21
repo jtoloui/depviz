@@ -656,6 +656,46 @@ func TestJSScanner_AllExtensions(t *testing.T) {
 	}
 }
 
+func TestMultiScanner(t *testing.T) {
+	t.Parallel()
+
+	dir := t.TempDir()
+
+	writeFile(t, filepath.Join(dir, "main.go"), `package main
+
+import "fmt"
+
+func main() { fmt.Println() }
+`)
+
+	writeFile(t, filepath.Join(dir, "app.ts"), `import express from 'express';
+export const app = express();
+`)
+
+	cfg := &config.Config{
+		Language: "multi",
+		Exclude:  []string{"vendor", ".git", "node_modules"},
+	}
+
+	s := scanner.NewMultiScanner(cfg)
+	results, err := s.Scan(dir)
+	if err != nil {
+		t.Fatalf("Scan: %v", err)
+	}
+
+	if len(results) != 2 {
+		t.Fatalf("got %d files, want 2", len(results))
+	}
+
+	langs := map[string]bool{}
+	for _, r := range results {
+		langs[r.Lang] = true
+	}
+	if !langs["go"] || !langs["js"] {
+		t.Errorf("expected both go and js, got %v", langs)
+	}
+}
+
 func writeFile(t *testing.T, path, content string) {
 	t.Helper()
 	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {

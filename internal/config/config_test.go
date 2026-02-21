@@ -86,6 +86,32 @@ func TestLoad_FallbackGo(t *testing.T) {
 	}
 }
 
+func TestLoad_FallbackMulti(t *testing.T) {
+	t.Parallel()
+
+	dir := t.TempDir()
+	gomod := "module github.com/example/test\n\ngo 1.25\n"
+	if err := os.WriteFile(filepath.Join(dir, "go.mod"), []byte(gomod), 0o644); err != nil {
+		t.Fatal(err)
+	}
+
+	cfg, err := config.Load(dir, "multi")
+	if err != nil {
+		t.Fatalf("Load: %v", err)
+	}
+
+	if cfg.Language != "multi" {
+		t.Errorf("Language = %q, want %q", cfg.Language, "multi")
+	}
+	// Multi should have both Go and JS excludes
+	if len(cfg.Exclude) < 3 {
+		t.Errorf("Exclude len = %d, want >= 3", len(cfg.Exclude))
+	}
+	// Multi should have internal patterns from both Go (module path) and JS (relative)
+	if len(cfg.Classify.Internal) < 2 {
+		t.Errorf("Internal len = %d, want >= 2", len(cfg.Classify.Internal))
+	}
+}
 func TestLoad_InvalidLanguage(t *testing.T) {
 	t.Parallel()
 

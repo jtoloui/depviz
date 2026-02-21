@@ -289,6 +289,114 @@ export type Config = { name: string };
 	}
 }
 
+// TestE2E_MultiProject creates a fixture with Go + JS files and runs the full multi pipeline.
+func TestE2E_MultiProject(t *testing.T) {
+	t.Parallel()
+
+	dir := t.TempDir()
+	writeFixture(t, dir, "go.mod", "module github.com/test/multi\n\ngo 1.25\n")
+	writeFixture(t, dir, "main.go", `package main
+
+import (
+	"fmt"
+	"github.com/test/multi/internal/svc"
+)
+
+func main() { fmt.Println(svc.Run()) }
+`)
+	writeFixture(t, dir, "internal/svc/svc.go", `package svc
+
+func Run() string { return "ok" }
+`)
+	writeFixture(t, dir, "web/app.ts", `import express from 'express';
+import { helper } from './utils';
+
+export const app = express();
+`)
+	writeFixture(t, dir, "web/utils.ts", `export function helper() { return 'hi'; }
+`)
+
+	cfg, err := config.Load(dir, "multi")
+	if err != nil {
+		t.Fatalf("config.Load: %v", err)
+	}
+
+	s := scanner.NewMultiScanner(cfg)
+	results, err := s.Scan(dir)
+	if err != nil {
+		t.Fatalf("Scan: %v", err)
+	}
+
+	if len(results) != 4 {
+		t.Fatalf("got %d files, want 4", len(results))
+	}
+
+	langs := map[string]int{}
+	for _, r := range results {
+		langs[r.Lang]++
+	}
+	if langs["go"] != 2 || langs["js"] != 2 {
+		t.Errorf("lang counts = %v, want go:2 js:2", langs)
+	}
+
+	cl, err := classify.New(cfg)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	outPath := filepath.Join(dir, "deps.html")
+	f, err := os.Create(outPath)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := render.HTML(f, dir, results, cl); err != nil {
+		_ = f.Close()
+		t.Fatal(err)
+	}
+	if err := f.Close(); err != nil {
+		t.Fatal(err)
+	}
+
+	html, err := os.ReadFile(outPath)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	re := regexp.MustCompile(`const data = (\[.*?\]);\s*const root`)
+	m := re.FindSubmatch(html)
+	if m == nil {
+		t.Fatal("could not extract JSON data")
+	}
+
+	var files []struct {
+		File    string `json:"file"`
+		Imports []struct {
+			Name     string `json:"name"`
+			Category string `json:"category"`
+		} `json:"imports"`
+	}
+	if err := json.Unmarshal(m[1], &files); err != nil {
+		t.Fatal(err)
+	}
+
+	// Verify both Go and JS imports are classified correctly
+	categories := map[string]string{}
+	for _, f := range files {
+		for _, imp := range f.Imports {
+			categories[imp.Name] = imp.Category
+		}
+	}
+	if categories["fmt"] != "stdlib" {
+		t.Errorf("fmt = %q, want stdlib", categories["fmt"])
+	}
+	if categories["express"] != "external" {
+		t.Errorf("express = %q, want external", categories["express"])
+	}
+	if categories["./utils"] != "internal" {
+		t.Errorf("./utils = %q, want internal", categories["./utils"])
+	}
+}
+
 func writeFixture(t *testing.T, base, rel, content string) {
 	t.Helper()
 	p := filepath.Join(base, rel)
