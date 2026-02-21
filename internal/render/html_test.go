@@ -229,3 +229,35 @@ func TestHTML_EmptyResults(t *testing.T) {
 		}
 	}
 }
+
+func TestHTML_DeterministicOrder(t *testing.T) {
+	t.Parallel()
+
+	cl := newClassifier(t, "go")
+	results := []scanner.FileImports{
+		{File: "z/last.go", Lang: "go", Imports: []string{"fmt"}},
+		{File: "a/first.go", Lang: "go", Imports: []string{"os"}},
+		{File: "m/middle.go", Lang: "go", Imports: []string{"net"}},
+	}
+
+	var buf1, buf2 bytes.Buffer
+	if err := render.HTML(&buf1, "/tmp", results, cl); err != nil {
+		t.Fatal(err)
+	}
+	results[0], results[2] = results[2], results[0]
+	if err := render.HTML(&buf2, "/tmp", results, cl); err != nil {
+		t.Fatal(err)
+	}
+
+	if buf1.String() != buf2.String() {
+		t.Error("HTML output differs for same files in different input order")
+	}
+
+	out := buf1.String()
+	aIdx := strings.Index(out, "a/first.go")
+	mIdx := strings.Index(out, "m/middle.go")
+	zIdx := strings.Index(out, "z/last.go")
+	if aIdx > mIdx || mIdx > zIdx {
+		t.Errorf("files not sorted: a=%d m=%d z=%d", aIdx, mIdx, zIdx)
+	}
+}
