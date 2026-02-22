@@ -696,6 +696,53 @@ export const app = express();
 	}
 }
 
+func TestMultiScanner_ErrorPropagation(t *testing.T) {
+	t.Parallel()
+
+	cfg := &config.Config{
+		Language: "multi",
+		Exclude:  []string{"vendor", ".git", "node_modules"},
+	}
+
+	// Test Go scanner error (nonexistent path)
+	s := scanner.NewMultiScanner(cfg)
+	_, err := s.Scan("/nonexistent/path/that/does/not/exist")
+	if err == nil {
+		t.Error("expected error for nonexistent path")
+	}
+}
+
+func TestMultiScanner_JSErrorPropagation(t *testing.T) {
+	t.Parallel()
+
+	dir := t.TempDir()
+
+	// Valid Go file so Go scan succeeds
+	writeFile(t, filepath.Join(dir, "main.go"), `package main
+
+func main() {}
+`)
+
+	// Unreadable JS file so JS scan fails
+	jsPath := filepath.Join(dir, "bad.ts")
+	writeFile(t, jsPath, `import x from 'y';`)
+	if err := os.Chmod(jsPath, 0o000); err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() { _ = os.Chmod(jsPath, 0o644) })
+
+	cfg := &config.Config{
+		Language: "multi",
+		Exclude:  []string{"vendor", ".git", "node_modules"},
+	}
+
+	s := scanner.NewMultiScanner(cfg)
+	_, err := s.Scan(dir)
+	if err == nil {
+		t.Error("expected error from unreadable JS file")
+	}
+}
+
 func writeFile(t *testing.T, path, content string) {
 	t.Helper()
 	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
