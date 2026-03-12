@@ -1,0 +1,10 @@
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: depviz
+  annotations:
+    github.com/project-slug: jtoloui/depviz
+spec:
+  type: other
+  lifecycle: unknown
+  owner: personal-projects
