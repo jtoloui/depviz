@@ -88,6 +88,30 @@ vsBtn.className = 'vscode-open-btn';
 vsBtn.innerHTML = '<i class="devicon-vscode-plain"></i> Open in VS Code';
 rootEl.parentElement.querySelector('div').prepend(vsBtn);
 
+// Dep report
+const depReportEl = document.getElementById('dep-report');
+const depReportSection = document.getElementById('dep-report-section');
+if (typeof depReport !== 'undefined' && depReport && depReport.length) {
+  const unused = depReport.filter(d => d.status === 'unused');
+  const phantom = depReport.filter(d => d.status === 'phantom');
+  let html = '';
+  if (unused.length) {
+    html += '<div class="dep-group"><span class="dep-group-label dep-unused">⚠ Unused (' + unused.length + ')</span><ul class="dep-list">';
+    unused.forEach(d => {
+      html += '<li class="dep-item dep-unused"><span class="dep-name">' + d.name + '</span><span class="dep-meta">' + (d.version || '') + ' · ' + d.type + '</span></li>';
+    });
+    html += '</ul></div>';
+  }
+  if (phantom.length) {
+    html += '<div class="dep-group"><span class="dep-group-label dep-phantom">🚨 Phantom (' + phantom.length + ')</span><ul class="dep-list">';
+    phantom.forEach(d => {
+      html += '<li class="dep-item dep-phantom"><span class="dep-name">' + d.name + '</span><span class="dep-meta">not in package.json</span></li>';
+    });
+    html += '</ul></div>';
+  }
+  if (html) { depReportEl.innerHTML = html; } else { depReportSection.style.display = 'none'; }
+} else { depReportSection.style.display = 'none'; }
+
 // State
 const active = new Set(['stdlib', 'internal', 'private', 'external']);
 let selectedImport = null;

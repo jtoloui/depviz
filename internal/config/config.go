@@ -26,13 +26,19 @@ type ClassifyRules struct {
 	Private  []string `yaml:"private"`
 }
 
+// ManifestConfig holds settings for package.json dependency analysis.
+type ManifestConfig struct {
+	IgnoreUnused []string `yaml:"ignoreUnused"`
+}
+
 // Config represents a .depviz.yml configuration.
 type Config struct {
-	Language string        `yaml:"language"`
-	Port     int           `yaml:"port,omitempty"`
-	Output   string        `yaml:"output,omitempty"`
-	Exclude  []string      `yaml:"exclude"`
-	Classify ClassifyRules `yaml:"classify"`
+	Language string         `yaml:"language"`
+	Port     int            `yaml:"port,omitempty"`
+	Output   string         `yaml:"output,omitempty"`
+	Exclude  []string       `yaml:"exclude"`
+	Classify ClassifyRules  `yaml:"classify"`
+	Manifest ManifestConfig `yaml:"manifest"`
 }
 
 var supportedLangs = map[string]bool{"go": true, "js": true, "multi": true}

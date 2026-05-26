@@ -9,6 +9,7 @@ import (
 	"github.com/jtoloui/depviz/internal/classify"
 	"github.com/jtoloui/depviz/internal/cli"
 	"github.com/jtoloui/depviz/internal/config"
+	"github.com/jtoloui/depviz/internal/manifest"
 	"github.com/jtoloui/depviz/internal/render"
 	"github.com/jtoloui/depviz/internal/scanner"
 	"github.com/spf13/cobra"
@@ -55,6 +56,15 @@ var scanCmd = &cobra.Command{
 			return fmt.Errorf("scanning: %w", err)
 		}
 
+		// Package.json dependency analysis (JS/multi only).
+		var depReport []manifest.DepReport
+		if cfg.Language == "js" || cfg.Language == "multi" {
+			depReport, err = manifest.Analyze(root, results, cfg)
+			if err != nil {
+				slog.Debug("manifest analysis skipped", "error", err)
+			}
+		}
+
 		out := resolveOutput(cfg, output, root)
 		if err := os.MkdirAll(filepath.Dir(out), 0o755); err != nil {
 			return fmt.Errorf("creating output dir: %w", err)
@@ -65,7 +75,7 @@ var scanCmd = &cobra.Command{
 			return fmt.Errorf("creating output: %w", err)
 		}
 
-		if err := render.HTML(f, root, results, cl); err != nil {
+		if err := render.HTML(f, root, results, cl, depReport); err != nil {
 			_ = f.Close()
 			return fmt.Errorf("rendering: %w", err)
 		}

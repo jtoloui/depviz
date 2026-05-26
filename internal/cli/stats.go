@@ -6,13 +6,14 @@ import (
 	"strings"
 
 	"github.com/jtoloui/depviz/internal/classify"
+	"github.com/jtoloui/depviz/internal/manifest"
 	"github.com/jtoloui/depviz/internal/scanner"
 )
 
 const barWidth = 20
 
 // Stats prints a coloured terminal stats dashboard.
-func Stats(results []scanner.FileImports, cl *classify.Classifier) {
+func Stats(results []scanner.FileImports, cl *classify.Classifier, depReport []manifest.DepReport) {
 	totalFiles := len(results)
 	totalImports := 0
 	totalExports := 0
@@ -73,6 +74,33 @@ func Stats(results []scanner.FileImports, cl *classify.Classifier) {
 			fmt.Printf("    %s%-45s%s %d imports\n", dim, s.key, reset, s.val)
 		}
 		fmt.Println()
+	}
+
+	// Dependency report from package.json analysis.
+	if len(depReport) > 0 {
+		var unused, phantom []manifest.DepReport
+		for _, d := range depReport {
+			switch d.Status {
+			case manifest.Unused:
+				unused = append(unused, d)
+			case manifest.Phantom:
+				phantom = append(phantom, d)
+			}
+		}
+		if len(unused) > 0 {
+			fmt.Printf("  %s%sUnused Dependencies%s\n", bold, red, reset)
+			for _, d := range unused {
+				fmt.Printf("    %s%-35s%s %s (%s)\n", dim, d.Name, reset, d.Version, d.Type)
+			}
+			fmt.Println()
+		}
+		if len(phantom) > 0 {
+			fmt.Printf("  %s%sPhantom Imports%s (imported but not in package.json)%s\n", bold, red, reset, "")
+			for _, d := range phantom {
+				fmt.Printf("    %s%s%s\n", dim, d.Name, reset)
+			}
+			fmt.Println()
+		}
 	}
 }
 

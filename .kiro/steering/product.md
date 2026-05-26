@@ -79,9 +79,22 @@ Help developers understand and explore the dependency landscape of their codebas
 - ASCII art banner with purple theme
 - Coloured terminal output for scan/serve/init results
 - `depviz init` — interactive config generator with auto-detected language
-- `depviz stats` — terminal stats dashboard: file/import/export/line counts, language bars, category bars, top 5 imports, coupling hotspots
+- `depviz stats` — terminal stats dashboard: file/import/export/line counts, language bars, category bars, top 5 imports, coupling hotspots, dependency health
 - Error handling: single error line + "Run 'depviz <command> -h'" hint
 - SilenceUsage + SilenceErrors on root command
+- Default language is `multi` — auto-detects Go + JS/TS, graceful fallback if no go.mod
+
+## Current Features (Dependency Health ✅)
+
+- Parse package.json: dependencies, devDependencies, scripts
+- Monorepo workspace detection: pnpm-workspace.yaml, package.json#workspaces (array + object forms)
+- Cross-reference declared deps vs actual imports → unused/phantom detection
+- Scripts parsing: detect CLI tools used in package.json scripts (cross-env, webpack-cli, etc.)
+- Workspace sibling exclusion: cross-package imports not flagged as external
+- Configurable ignore list (`manifest.ignoreUnused` in .depviz.yml) with sensible defaults
+- Default ignore list covers: @types/*, build tooling, linters, test runners, storybook, webpack loaders
+- UI: "Dependency health" section in sidebar showing unused (⚠) and phantom (🚨) deps
+- Terminal: `depviz stats` prints unused/phantom deps in coloured output
 
 ## What devs use it for today
 
@@ -92,6 +105,7 @@ Help developers understand and explore the dependency landscape of their codebas
 - Understanding file APIs — what does each file export?
 - Go architecture review — public vs private symbols per file
 - Codebase health — language breakdown, import density, coupling hotspots
+- Dependency hygiene — unused deps in package.json, phantom imports not declared
 
 ---
 

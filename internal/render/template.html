@@ -106,6 +106,14 @@
 					>
 				</div>
 				<ul class="top-imports" id="god-files"></ul>
+				<div style="margin-top: 0.4rem" id="dep-report-section">
+					<span class="stat-label"
+						>Dependency health<span class="stat-tip"
+							>Unused deps declared in package.json but never imported; phantom deps imported but not declared</span
+						></span
+					>
+				</div>
+				<div id="dep-report"></div>
 			</div>
 		</aside>
 
@@ -181,6 +189,7 @@
 
 		<script>
 			const data = {{.DataJSON}};
+			const depReport = {{.DepReportJSON}};
 			const root = {{.Root}};
 			{{.JS}}
 		</script>

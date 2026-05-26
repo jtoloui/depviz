@@ -41,6 +41,7 @@ depviz is a CLI tool that scans your Go or JavaScript/TypeScript project, extrac
 - 🏷️ **File type icons** — Devicon icons for React, TypeScript, Go, Vite, Tailwind, Jest, etc.
 - 🌳 **File tree** — collapsible directory tree in sidebar, click to scroll to card
 - 📉 **Stats dashboard** — total files, imports, exports, lines, language breakdown, coupling hotspots
+- 📦 **Dependency health** — detect unused deps, phantom imports (imported but not in package.json), with monorepo workspace awareness
 - ⌨️ **Keyboard shortcuts** — Esc closes panels, / focuses search
 - 🔗 **Shareable URLs** — search, filters, view mode, sort, reverse lookup persist in URL hash
 - ◈ **Favicon** — inline SVG favicon, no external files needed
@@ -83,21 +84,21 @@ depviz scan ./my-project
 
 | Flag | Short | Default | Description |
 |------|-------|---------|-------------|
-| `--lang` | `-l` | `go` | Language: `go`, `js`, or `multi` |
+| `--lang` | `-l` | `multi` | Language: `go`, `js`, or `multi` |
 | `--output` | `-o` | `<project>/.depviz/deps.html` | Output file path |
 | `--verbose` | `-v` | `false` | Enable debug logging |
 
 #### Examples
 
 ```bash
-# Scan a Go project
-depviz scan ./my-go-api
+# Scan any project (auto-detects Go + JS/TS)
+depviz scan ./my-project
 
-# Scan a JS/TS project
+# Scan a Go-only project
+depviz scan -l go ./my-go-api
+
+# Scan a JS/TS-only project
 depviz scan -l js ./my-react-app
-
-# Scan a mixed Go + JS/TS project
-depviz scan -l multi ./my-fullstack-app
 
 # Custom output path
 depviz scan -o visualisation.html ./my-project
@@ -116,7 +117,7 @@ depviz serve ./my-project
 
 | Flag | Short | Default | Description |
 |------|-------|---------|-------------|
-| `--lang` | `-l` | `go` | Language: `go`, `js`, or `multi` |
+| `--lang` | `-l` | `multi` | Language: `go`, `js`, or `multi` |
 | `--port` | `-p` | `3000` | Port to serve on |
 | `--verbose` | `-v` | `false` | Enable debug logging |
 
@@ -125,11 +126,11 @@ If the port is in use, depviz automatically picks a free one.
 #### Examples
 
 ```bash
-# Serve a Go project on default port
-depviz serve ./my-go-api
+# Serve any project on default port
+depviz serve ./my-project
 
-# Serve a JS project on a custom port
-depviz serve -l js -p 8080 ./my-react-app
+# Serve on a custom port
+depviz serve -p 8080 ./my-project
 ```
 
 ### `depviz init`
@@ -147,15 +148,15 @@ Print a dependency stats dashboard in the terminal — no HTML output.
 
 ```bash
 depviz stats ./my-project
-depviz stats -l multi .
+depviz stats -l go .
 ```
 
 | Flag | Short | Default | Description |
 |------|-------|---------|-------------|
-| `--lang` | `-l` | `go` | Language: `go`, `js`, or `multi` |
+| `--lang` | `-l` | `multi` | Language: `go`, `js`, or `multi` |
 | `--verbose` | `-v` | `false` | Enable debug logging |
 
-Shows: file/import/export/line counts, language breakdown, category breakdown (stdlib/internal/private/external), top 5 most imported packages, and coupling hotspots (files with 8+ imports). Respects `.depviz.yml` if present.
+Shows: file/import/export/line counts, language breakdown, category breakdown (stdlib/internal/private/external), top 5 most imported packages, coupling hotspots (files with 8+ imports), and dependency health (unused/phantom deps from package.json). Respects `.depviz.yml` if present.
 
 ### `depviz --version`
 
@@ -215,6 +216,9 @@ classify:
     - "^@/.*"          # alias imports
   private:
     - "^@jtoloui/.*"   # your org packages
+manifest:
+  ignoreUnused:
+    - "my-custom-plugin"  # appended to built-in defaults
 ```
 
 ### Fields
@@ -227,6 +231,7 @@ classify:
 | `exclude` | `[]string` | Directory/file names to skip during scanning |
 | `classify.internal` | `[]string` | Regex patterns for internal/relative imports |
 | `classify.private` | `[]string` | Regex patterns for your org/private packages |
+| `manifest.ignoreUnused` | `[]string` | Glob patterns for deps to exclude from unused detection |
 
 Anything not matched by `internal` or `private` patterns is classified as **external** (or **stdlib** if it's a known built-in).
 
@@ -278,6 +283,10 @@ dep-visualiser/
 │   ├── config/
 │   │   ├── config.go        ← YAML config loading + validation
 │   │   └── defaults.go      ← Per-language default configs
+│   ├── manifest/
+│   │   ├── manifest.go      ← Parse package.json, types
+│   │   ├── resolve.go       ← Cross-reference imports vs declared deps
+│   │   └── workspace.go     ← Monorepo workspace detection
 │   ├── render/
 │   │   ├── html.go          ← HTML generation (embeds CSS/JS/template)
 │   │   ├── template.html    ← HTML skeleton with placeholders

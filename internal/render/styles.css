@@ -205,7 +205,7 @@
   .sort-row select:focus { border-color: var(--accent); }
 
   /* File tree */
-  .file-tree { font-size: 0.8rem; overflow-y: auto; border: 1px solid var(--border); border-radius: var(--radius); padding: 0.4rem 0; }
+  .file-tree { font-size: 0.8rem; overflow-y: auto; border: 1px solid var(--border); border-radius: var(--radius); padding: 0.4rem 0; min-height: 150px; max-height: 300px; flex-shrink: 0; }
   .ft-dir, .ft-file { display: flex; align-items: center; gap: 0.35rem; padding: 0.2rem 0.5rem; cursor: pointer; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--text); }
   .ft-dir:hover, .ft-file:hover { background: var(--bg); }
   .ft-file.active { background: var(--bg); color: var(--accent); }
@@ -258,6 +258,16 @@
   .top-imports li { display: flex; justify-content: space-between; gap: 0.5rem; padding: 1px 0; font-family: 'SF Mono', 'Fira Code', monospace; font-size: 0.7rem; }
   .top-imports li span:first-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
   .top-imports .ti-count { color: var(--accent); flex-shrink: 0; }
+  .dep-group { margin-top: 0.4rem; }
+  .dep-group-label { font-size: 0.7rem; font-weight: 600; }
+  .dep-group-label.dep-unused { color: var(--orange); }
+  .dep-group-label.dep-phantom { color: #e55; }
+  .dep-list { list-style: none; margin: 0.2rem 0 0; padding: 0; }
+  .dep-item { display: flex; justify-content: space-between; gap: 0.5rem; padding: 2px 0; font-family: 'SF Mono', 'Fira Code', monospace; font-size: 0.68rem; }
+  .dep-item .dep-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
+  .dep-item .dep-meta { color: var(--text-muted); flex-shrink: 0; font-size: 0.6rem; }
+  .dep-item.dep-unused .dep-name { color: var(--orange); }
+  .dep-item.dep-phantom .dep-name { color: #e55; }
   .cat-bar { display: flex; height: 6px; border-radius: 3px; overflow: hidden; margin-top: 0.25rem; }
   .cat-bar span { transition: width 0.3s; }
   .cat-bar-legend { display: flex; flex-wrap: wrap; gap: 0.3rem 0.6rem; margin-top: 0.25rem; font-size: 0.65rem; }

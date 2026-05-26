@@ -47,7 +47,7 @@ func TestHTML_ContainsStructure(t *testing.T) {
 	}
 
 	var buf bytes.Buffer
-	if err := render.HTML(&buf, "/project", results, newClassifier(t, "js")); err != nil {
+	if err := render.HTML(&buf, "/project", results, newClassifier(t, "js"), nil); err != nil {
 		t.Fatalf("HTML: %v", err)
 	}
 	html := buf.String()
@@ -96,12 +96,12 @@ func TestHTML_JSONDataIntegrity(t *testing.T) {
 	}
 
 	var buf bytes.Buffer
-	if err := render.HTML(&buf, "/go-project", results, newClassifier(t, "go")); err != nil {
+	if err := render.HTML(&buf, "/go-project", results, newClassifier(t, "go"), nil); err != nil {
 		t.Fatalf("HTML: %v", err)
 	}
 
 	// Extract JSON from "const data = [...];"
-	re := regexp.MustCompile(`const data = (\[.*?\]);\s*const root`)
+	re := regexp.MustCompile(`const data = (\[.*?\]);\s*const depReport`)
 	m := re.FindSubmatch(buf.Bytes())
 	if m == nil {
 		t.Fatal("could not extract JSON data from output")
@@ -182,11 +182,11 @@ func TestHTML_DuplicateImportPaths(t *testing.T) {
 	}
 
 	var buf bytes.Buffer
-	if err := render.HTML(&buf, "/project", results, newClassifier(t, "js")); err != nil {
+	if err := render.HTML(&buf, "/project", results, newClassifier(t, "js"), nil); err != nil {
 		t.Fatalf("HTML: %v", err)
 	}
 
-	re := regexp.MustCompile(`const data = (\[.*?\]);\s*const root`)
+	re := regexp.MustCompile(`const data = (\[.*?\]);\s*const depReport`)
 	m := re.FindSubmatch(buf.Bytes())
 	if m == nil {
 		t.Fatal("could not extract JSON data")
@@ -214,7 +214,7 @@ func TestHTML_EmptyResults(t *testing.T) {
 	t.Parallel()
 
 	var buf bytes.Buffer
-	if err := render.HTML(&buf, "/empty", nil, newClassifier(t, "js")); err != nil {
+	if err := render.HTML(&buf, "/empty", nil, newClassifier(t, "js"), nil); err != nil {
 		t.Fatalf("HTML: %v", err)
 	}
 
@@ -241,11 +241,11 @@ func TestHTML_DeterministicOrder(t *testing.T) {
 	}
 
 	var buf1, buf2 bytes.Buffer
-	if err := render.HTML(&buf1, "/tmp", results, cl); err != nil {
+	if err := render.HTML(&buf1, "/tmp", results, cl, nil); err != nil {
 		t.Fatal(err)
 	}
 	results[0], results[2] = results[2], results[0]
-	if err := render.HTML(&buf2, "/tmp", results, cl); err != nil {
+	if err := render.HTML(&buf2, "/tmp", results, cl, nil); err != nil {
 		t.Fatal(err)
 	}
 

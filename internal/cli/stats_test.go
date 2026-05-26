@@ -64,7 +64,7 @@ func TestStats(t *testing.T) {
 		},
 	}
 
-	out := captureStdout(t, func() { cli.Stats(results, cl) })
+	out := captureStdout(t, func() { cli.Stats(results, cl, nil) })
 
 	tests := []struct {
 		name string
@@ -102,7 +102,7 @@ func TestStatsEmpty(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	out := captureStdout(t, func() { cli.Stats(nil, cl) })
+	out := captureStdout(t, func() { cli.Stats(nil, cl, nil) })
 
 	if !strings.Contains(out, "Files") {
 		t.Error("expected Files label in empty stats")
@@ -129,7 +129,7 @@ func TestStatsMultiLang(t *testing.T) {
 		{File: "app.ts", Lang: "js", Imports: []string{"./utils", "express"}, Lines: 20},
 	}
 
-	out := captureStdout(t, func() { cli.Stats(results, cl) })
+	out := captureStdout(t, func() { cli.Stats(results, cl, nil) })
 
 	for _, want := range []string{"go", "js", "stdlib", "internal", "external"} {
 		if !strings.Contains(out, want) {
@@ -149,7 +149,7 @@ func TestStatsNoImports(t *testing.T) {
 		{File: "empty.go", Lang: "go", Lines: 5},
 	}
 
-	out := captureStdout(t, func() { cli.Stats(results, cl) })
+	out := captureStdout(t, func() { cli.Stats(results, cl, nil) })
 
 	if !strings.Contains(out, "Imports") {
 		t.Error("expected Imports label")

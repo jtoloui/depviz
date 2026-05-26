@@ -11,6 +11,7 @@ const (
 	reset   = "\033[0m"
 	bold    = "\033[1m"
 	dim     = "\033[2m"
+	red     = "\033[31m"
 	green   = "\033[32m"
 	cyan    = "\033[36m"
 	magenta = "\033[35m"

@@ -9,6 +9,7 @@ import (
 
 	"github.com/jtoloui/depviz/internal/classify"
 	"github.com/jtoloui/depviz/internal/config"
+	"github.com/jtoloui/depviz/internal/manifest"
 	"github.com/jtoloui/depviz/internal/scanner"
 )
 
@@ -48,14 +49,15 @@ type fileData struct {
 }
 
 type templateData struct {
-	DataJSON template.JS
-	Root     string
-	CSS      template.CSS
-	JS       template.JS
+	DataJSON      template.JS
+	DepReportJSON template.JS
+	Root          string
+	CSS           template.CSS
+	JS            template.JS
 }
 
 // HTML writes a dependency visualisation to w.
-func HTML(w io.Writer, root string, results []scanner.FileImports, cl *classify.Classifier) error {
+func HTML(w io.Writer, root string, results []scanner.FileImports, cl *classify.Classifier, depReport []manifest.DepReport) error {
 	sort.Slice(results, func(i, j int) bool { return results[i].File < results[j].File })
 	files := make([]fileData, len(results))
 	for i, r := range results {
@@ -87,10 +89,16 @@ func HTML(w io.Writer, root string, results []scanner.FileImports, cl *classify.
 		return err
 	}
 
+	depData, err := json.Marshal(depReport)
+	if err != nil {
+		return err
+	}
+
 	return tmpl.Execute(w, templateData{
-		DataJSON: template.JS(data),
-		Root:     root,
-		CSS:      template.CSS(cssContent),
-		JS:       template.JS(jsContent),
+		DataJSON:      template.JS(data),
+		DepReportJSON: template.JS(depData),
+		Root:          root,
+		CSS:           template.CSS(cssContent),
+		JS:            template.JS(jsContent),
 	})
 }

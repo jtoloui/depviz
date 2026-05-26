@@ -30,7 +30,7 @@ var (
 )
 
 func init() {
-	rootCmd.PersistentFlags().StringVarP(&lang, "lang", "l", "go", "language: go, js")
+	rootCmd.PersistentFlags().StringVarP(&lang, "lang", "l", "multi", "language: go, js, multi")
 	rootCmd.PersistentFlags().BoolVarP(&verbose, "verbose", "v", false, "enable debug logging")
 }
 

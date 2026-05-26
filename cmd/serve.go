@@ -15,6 +15,7 @@ import (
 	"github.com/jtoloui/depviz/internal/classify"
 	"github.com/jtoloui/depviz/internal/cli"
 	"github.com/jtoloui/depviz/internal/config"
+	"github.com/jtoloui/depviz/internal/manifest"
 	"github.com/jtoloui/depviz/internal/render"
 	"github.com/spf13/cobra"
 )
@@ -60,10 +61,19 @@ var serveCmd = &cobra.Command{
 			return fmt.Errorf("scanning: %w", err)
 		}
 
+		// Package.json dependency analysis (JS/multi only).
+		var depReport []manifest.DepReport
+		if cfg.Language == "js" || cfg.Language == "multi" {
+			depReport, err = manifest.Analyze(root, results, cfg)
+			if err != nil {
+				slog.Debug("manifest analysis skipped", "error", err)
+			}
+		}
+
 		mux := http.NewServeMux()
 		mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 			w.Header().Set("Content-Type", "text/html")
-			if err := render.HTML(w, root, results, cl); err != nil {
+			if err := render.HTML(w, root, results, cl, depReport); err != nil {
 				http.Error(w, "render error", http.StatusInternalServerError)
 			}
 		})

@@ -71,7 +71,7 @@ type Config struct{ Name string }
 	if err != nil {
 		t.Fatal(err)
 	}
-	if err := render.HTML(f, dir, results, cl); err != nil {
+	if err := render.HTML(f, dir, results, cl, nil); err != nil {
 		_ = f.Close()
 		t.Fatalf("render.HTML: %v", err)
 	}
@@ -94,7 +94,7 @@ type Config struct{ Name string }
 		t.Fatal(err)
 	}
 
-	re := regexp.MustCompile(`const data = (\[.*?\]);\s*const root`)
+	re := regexp.MustCompile(`const data = (\[.*?\]);\s*const depReport`)
 	m := re.FindSubmatch(html)
 	if m == nil {
 		t.Fatal("could not extract JSON data from output")
@@ -201,7 +201,7 @@ export type Config = { name: string };
 	if err != nil {
 		t.Fatal(err)
 	}
-	if err := render.HTML(f, dir, results, cl); err != nil {
+	if err := render.HTML(f, dir, results, cl, nil); err != nil {
 		_ = f.Close()
 		t.Fatal(err)
 	}
@@ -214,7 +214,7 @@ export type Config = { name: string };
 		t.Fatal(err)
 	}
 
-	re := regexp.MustCompile(`const data = (\[.*?\]);\s*const root`)
+	re := regexp.MustCompile(`const data = (\[.*?\]);\s*const depReport`)
 	m := re.FindSubmatch(html)
 	if m == nil {
 		t.Fatal("could not extract JSON data")
@@ -349,7 +349,7 @@ export const app = express();
 	if err != nil {
 		t.Fatal(err)
 	}
-	if err := render.HTML(f, dir, results, cl); err != nil {
+	if err := render.HTML(f, dir, results, cl, nil); err != nil {
 		_ = f.Close()
 		t.Fatal(err)
 	}
@@ -362,7 +362,7 @@ export const app = express();
 		t.Fatal(err)
 	}
 
-	re := regexp.MustCompile(`const data = (\[.*?\]);\s*const root`)
+	re := regexp.MustCompile(`const data = (\[.*?\]);\s*const depReport`)
 	m := re.FindSubmatch(html)
 	if m == nil {
 		t.Fatal("could not extract JSON data")

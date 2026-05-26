@@ -19,6 +19,11 @@ dep-visualiser/
 │   │   ├── config.go        ← Config type, Load (reads .depviz.yml), validate
 │   │   ├── config_test.go
 │   │   └── defaults.go      ← DefaultFor(lang) — JS, Go, and multi built-in defaults
+│   ├── manifest/
+│   │   ├── manifest.go      ← PackageJSON type, Parse (reads package.json), workspace field handling
+│   │   ├── manifest_test.go
+│   │   ├── resolve.go       ← BarePackageName, Analyze (cross-reference imports vs declared deps), scripts parsing
+│   │   └── workspace.go     ← Workspace detection (pnpm/npm/yarn), glob expansion, child package discovery
 │   ├── render/
 │   │   ├── html.go          ← HTML function, embeds template + CSS + JS via //go:embed
 │   │   ├── html_test.go     ← Render tests: structure, JSON integrity, duplicate imports, empty results
@@ -55,6 +60,7 @@ dep-visualiser/
 - `internal/scanner` — Knows how to walk directories and extract imports + exports + line counts. Language-specific parsers behind a shared Scanner interface. Concurrent via walk.go. JS/TS uses tree-sitter for AST-based parsing; Go uses go/ast.
 - `internal/classify` — Knows how to categorise an import string. Owns stdlib lists (Go: no-dot heuristic, JS: comprehensive Node.js builtins map with subpath imports) and regex matching. Depends on config for patterns.
 - `internal/config` — Knows how to read .depviz.yml and provide defaults. Pure data + validation. No behaviour beyond loading.
+- `internal/manifest` — Knows how to read package.json files, detect workspaces (pnpm/npm/yarn), and cross-reference declared deps against actual imports. Produces a dep report (used/unused/phantom). Also parses scripts field to detect CLI tool usage.
 - `internal/render` — Knows how to turn scan results into HTML. Template split into three source files (HTML/CSS/JS) for maintainability, inlined at build time via `//go:embed` for single-file output. Depends on classify for category assignment.
 
 ## Data Flow
@@ -64,7 +70,8 @@ CLI flags + .depviz.yml → config.Load → Config
 Config → scanner.New{Go,TreeSitter,Multi}Scanner → Scanner
 Config → classify.New → Classifier
 Scanner.Scan(root) → []FileImports (with Details + Exports + Lines + Lang)
-[]FileImports + Classifier → render.HTML (ClassifyWithLang per file) → io.Writer (single HTML file)
+[]FileImports + Config → manifest.Analyze (JS/multi only) → []DepReport (used/unused/phantom)
+[]FileImports + Classifier + []DepReport → render.HTML (ClassifyWithLang per file) → io.Writer (single HTML file)
 ```
 
 ## Key Interfaces

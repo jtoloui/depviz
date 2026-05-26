@@ -8,6 +8,56 @@ import (
 	"strings"
 )
 
+// DefaultIgnoreUnused is the built-in list of packages that are commonly
+// declared in package.json but never explicitly imported in source code.
+var DefaultIgnoreUnused = []string{
+	"@types/*",
+	"typescript",
+	// Git hooks & commit tooling
+	"husky",
+	"lint-staged",
+	"commitlint*",
+	"@commitlint/*",
+	// Formatters & linters (CLI-only)
+	"prettier",
+	"eslint*",
+	"@biomejs/*",
+	"stylelint*",
+	// Dev runners & CLI tools
+	"concurrently",
+	"nodemon",
+	"ts-node",
+	"tsx",
+	"plop",
+	"cross-env",
+	"npm-watch",
+	"patch-package",
+	// Build tooling plugins (referenced in config, not imported)
+	"@babel/*",
+	"babel-*",
+	"postcss*",
+	"autoprefixer",
+	"tailwindcss",
+	"esbuild-plugin-*",
+	"sass",
+	"core-js",
+	// Webpack loaders & plugins
+	"@svgr/*",
+	"*-loader",
+	// Test tooling (referenced in config)
+	"@vitest/coverage-*",
+	"@swc/*",
+	"identity-obj-proxy",
+	// Storybook (addons referenced in .storybook/main config)
+	"@storybook/*",
+	"storybook",
+	// Cypress plugins
+	"cypress-*",
+	"mochawesome*",
+	// Prettier configs
+	"*-prettier-config",
+}
+
 // DefaultFor returns the built-in default config for a language.
 // For Go, it reads the module path from go.mod to set internal patterns.
 func DefaultFor(lang, root string) (*Config, error) {
@@ -30,6 +80,9 @@ func defaultJS() *Config {
 		Classify: ClassifyRules{
 			Internal: []string{`^\.\.?/.*`},
 		},
+		Manifest: ManifestConfig{
+			IgnoreUnused: DefaultIgnoreUnused,
+		},
 	}
 }
 
@@ -49,11 +102,20 @@ func defaultGo(root string) (*Config, error) {
 }
 
 func defaultMulti(root string) (*Config, error) {
+	jsCfg := defaultJS()
+
 	goCfg, err := defaultGo(root)
 	if err != nil {
-		return nil, err
+		// No go.mod — use JS defaults only (pure JS/TS project).
+		return &Config{
+			Language: "multi",
+			Exclude:  jsCfg.Exclude,
+			Classify: jsCfg.Classify,
+			Manifest: ManifestConfig{
+				IgnoreUnused: DefaultIgnoreUnused,
+			},
+		}, nil
 	}
-	jsCfg := defaultJS()
 
 	exclude := append(goCfg.Exclude, jsCfg.Exclude...)
 	internal := append(goCfg.Classify.Internal, jsCfg.Classify.Internal...)
@@ -62,6 +124,9 @@ func defaultMulti(root string) (*Config, error) {
 		Language: "multi",
 		Exclude:  exclude,
 		Classify: ClassifyRules{Internal: internal},
+		Manifest: ManifestConfig{
+			IgnoreUnused: DefaultIgnoreUnused,
+		},
 	}, nil
 }
 

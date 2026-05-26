@@ -8,6 +8,7 @@ import (
 	"github.com/jtoloui/depviz/internal/classify"
 	"github.com/jtoloui/depviz/internal/cli"
 	"github.com/jtoloui/depviz/internal/config"
+	"github.com/jtoloui/depviz/internal/manifest"
 	"github.com/spf13/cobra"
 )
 
@@ -47,7 +48,16 @@ var statsCmd = &cobra.Command{
 			return fmt.Errorf("scanning: %w", err)
 		}
 
-		cli.Stats(results, cl)
+		// Package.json dependency analysis (JS/multi only).
+		var depReport []manifest.DepReport
+		if cfg.Language == "js" || cfg.Language == "multi" {
+			depReport, err = manifest.Analyze(root, results, cfg)
+			if err != nil {
+				slog.Debug("manifest analysis skipped", "error", err)
+			}
+		}
+
+		cli.Stats(results, cl, depReport)
 		return nil
 	},
 }
